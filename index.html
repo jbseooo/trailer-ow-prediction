@@ -48,7 +48,7 @@
   body{background:var(--ground);color:var(--ink);font-family:var(--body);
        font-weight:300;line-height:1.7;margin:0;-webkit-font-smoothing:antialiased}
   .wrap{max-width:1000px;margin:0 auto;padding-inline:20px}
-  .col{max-width:660px}
+  .col{max-width:680px;margin-inline:auto}
   p{margin:0 0 .9em;color:var(--ink-2)}
   h1,h2,h3{text-wrap:balance;margin:0}
   a{color:var(--cmt)}
@@ -70,14 +70,17 @@
   .band i:nth-child(2){background:var(--meta);flex:41}
   .band i:nth-child(3){background:var(--vis);flex:11.8}
 
-  header.hero{padding-block:clamp(40px,8vw,84px) 34px}
+  header.hero{padding-block:clamp(40px,8vw,84px) 34px;text-align:center}
+  .hero .sub{margin-inline:auto}
+  .hero .band{max-width:380px;margin-inline:auto}
   .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
            color:var(--muted);margin:0 0 20px}
   h1{font-family:var(--display);font-weight:700;letter-spacing:-.015em;
      font-size:clamp(32px,6vw,54px);line-height:1.15;margin-bottom:18px}
   .sub{font-size:clamp(15.5px,2vw,18px);color:var(--ink-2);max-width:560px;margin-bottom:30px}
-  .byline{display:flex;flex-wrap:wrap;gap:5px 20px;font-size:13.5px;color:var(--muted);
-          padding-top:22px;border-top:1px solid var(--line)}
+  .byline{display:flex;flex-wrap:wrap;justify-content:center;gap:5px 20px;font-size:13.5px;
+          color:var(--muted);padding-top:22px;border-top:1px solid var(--line);
+          max-width:680px;margin-inline:auto}
   .byline b{font-weight:500;color:var(--ink)}
 
   .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;
@@ -106,9 +109,9 @@
 
   section{padding-block:clamp(52px,7vw,80px);scroll-margin-top:60px}
   section.alt{background:var(--surface)}
-  .shead{margin-bottom:28px}
-  .shead .band{width:84px;margin-bottom:18px}
-  .shead .row{display:flex;align-items:baseline;gap:14px}
+  .shead{margin-bottom:28px;text-align:center}
+  .shead .band{width:84px;margin:0 auto 18px}
+  .shead .row{display:flex;align-items:baseline;justify-content:center;gap:14px}
   .shead .n{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;color:var(--muted);
             border:1px solid var(--line);border-radius:3px;padding:3px 7px;
             background:var(--ground);align-self:flex-start;margin-top:5px}
@@ -123,7 +126,8 @@
   figure img,figure svg{display:block;width:100%;height:auto;border:1px solid var(--line);
              border-radius:5px;background:var(--surface)}
   figure svg{padding:6px 0}
-  figcaption{font-size:12.5px;color:var(--muted);margin-top:10px;line-height:1.55}
+  figcaption{font-size:12.5px;color:var(--muted);margin-top:10px;line-height:1.55;
+             text-align:center;max-width:760px;margin-inline:auto}
   figcaption b{font-family:var(--mono);font-weight:500;color:var(--ink-2);font-size:11.5px}
 
   .views{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);
@@ -139,7 +143,8 @@
     .view{grid-template-columns:auto 1fr;row-gap:4px}
     .view .dim{grid-column:2;justify-self:start}
   }
-  .legend{display:flex;flex-wrap:wrap;gap:7px 18px;font-size:12px;color:var(--muted);margin-top:12px}
+  .legend{display:flex;flex-wrap:wrap;justify-content:center;gap:7px 18px;font-size:12px;
+          color:var(--muted);margin-top:12px}
   .legend span{display:inline-flex;align-items:center;gap:6px}
 
   .tw{overflow-x:auto;margin-block:20px;border:1px solid var(--line);border-radius:6px}
@@ -163,7 +168,9 @@
   pre{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;
       overflow-x:auto;font-family:var(--mono);font-size:12px;line-height:1.65;
       color:var(--ink-2);margin:0}
-  footer{padding-block:38px 60px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+  footer{padding-block:38px 60px;border-top:1px solid var(--line);font-size:12.5px;
+         color:var(--muted);text-align:center}
+  footer .band{max-width:380px;margin-inline:auto}
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 
@@ -174,7 +181,7 @@
     <div class="band"><i></i><i></i><i></i></div>
     <div class="byline">
       <span><b>서정범 &middot; Jeongbeom Seo</b></span>
-      <span class="ko">SW·AI 융합대학원 빅데이터융합학과</span><span class="en">Dept. of Big Data Convergence</span>
+      <span class="ko">고려대학교 SW·AI 융합대학원 빅데이터융합학과</span><span class="en">Dept. of Big Data Convergence, Korea University</span>
       <span class="ko">지도교수 강성구</span><span class="en">Advisor: Prof. SeongKu Kang</span>
     </div>
   </header>
@@ -536,7 +543,7 @@
 <div class="wrap">
   <footer>
     <div class="band" style="margin-bottom:20px"><i></i><i></i><i></i></div>
-    <p class="note" style="margin:0">서정범 · SW·AI 융합대학원 빅데이터융합학과 · 지도교수 강성구<br>
+    <p class="note" style="margin:0">서정범 · 고려대학교 SW·AI 융합대학원 빅데이터융합학과 · 지도교수 강성구<br>
     <span class="ko">모든 수치와 그림은 본 연구에서 직접 산출한 것이다.</span><span class="en">All figures and numbers were produced in this study.</span></p>
   </footer>
 </div>
