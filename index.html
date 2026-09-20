@@ -71,8 +71,11 @@
   .band i:nth-child(3){background:var(--vis);flex:11.8}
 
   header.hero{padding-block:clamp(40px,8vw,84px) 34px;text-align:center}
-  .hero .sub{margin-inline:auto}
-  .hero .band{max-width:380px;margin-inline:auto}
+  .hero > *{margin-inline:auto}
+  .hero h1{max-width:820px;text-wrap:normal}
+  .hero .sub{max-width:640px}
+  .hero .band{max-width:320px}
+  .hero .byline{max-width:640px}
   .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
            color:var(--muted);margin:0 0 20px}
   h1{font-family:var(--display);font-weight:700;letter-spacing:-.015em;
@@ -143,6 +146,22 @@
     .view{grid-template-columns:auto 1fr;row-gap:4px}
     .view .dim{grid-column:2;justify-self:start}
   }
+
+  /* 뷰 상세 카드 */
+  .vcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));
+          gap:14px;margin-block:24px;text-align:left}
+  .vcard{background:var(--surface);border:1px solid var(--line);border-radius:6px;
+         border-left:3px solid var(--c);padding:16px 18px}
+  section.alt .vcard{background:var(--ground)}
+  .vcard .vh{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:9px}
+  .vcard .vn{font-family:var(--mono);font-size:13.5px;font-weight:600;color:var(--c)}
+  .vcard .vd{font-family:var(--mono);font-size:11.5px;color:var(--muted);
+             background:var(--surface-2);padding:2px 7px;border-radius:3px}
+  .vcard .vs{font-size:11.5px;color:var(--muted);margin-left:auto}
+  .vcard p{font-size:13px;margin:0 0 10px;line-height:1.6}
+  .vcard dl{margin:0;display:grid;gap:6px;font-size:12.5px}
+  .vcard dt{font-weight:600;color:var(--ink);font-size:11px;letter-spacing:.04em}
+  .vcard dd{margin:0 0 4px;color:var(--muted);line-height:1.55}
   .legend{display:flex;flex-wrap:wrap;justify-content:center;gap:7px 18px;font-size:12px;
           color:var(--muted);margin-top:12px}
   .legend span{display:inline-flex;align-items:center;gap:6px}
@@ -443,6 +462,74 @@
     </figure>
 
     <div class="col">
+    <div class="vcards">
+      <article class="vcard" style="--c:var(--cmt)">
+        <div class="vh"><span class="vn">Cluster Signal</span><span class="vd">5d</span>
+          <span class="vs"><span class="ko">댓글</span><span class="en">comments</span></span></div>
+        <p><span class="ko">관객 반응이 어떤 유형으로 나뉘는지를 비율로 나타낸다.</span><span class="en">The mix of reaction types in a film&rsquo;s comment section.</span></p>
+        <dl>
+          <dt><span class="ko">만드는 법</span><span class="en">How</span></dt>
+          <dd><span class="ko">댓글을 1,536차원으로 임베딩해 L2 정규화하고, 학습 데이터 댓글만으로 K=5 군집을 학습한다. 각 댓글과 군집 중심의 코사인 유사도에 Softmax를 적용해 소속 확률을 구한 뒤 작품 단위로 평균한다.</span><span class="en">Comments are embedded in 1,536 dimensions, L2-normalised, and clustered into K=5 using training comments only. Cosine similarity to each centroid passes through a softmax, and the probabilities are averaged per film.</span></dd>
+          <dt><span class="ko">설계 근거</span><span class="en">Why</span></dt>
+          <dd><span class="ko">가장 가까운 군집 하나에 배정하면 나머지 성분이 버려진다. 1·2위 군집의 확률 차이는 중앙값 0.011에 불과해, 하드 레이블은 이 미세한 차이를 0과 1로 증폭한다.</span><span class="en">Hard assignment discards everything but the nearest cluster. The median gap between the top two clusters is only 0.011, so a hard label inflates a tiny difference into 0 or 1.</span></dd>
+        </dl>
+      </article>
+      <article class="vcard" style="--c:var(--meta)">
+        <div class="vh"><span class="vn">Genre</span><span class="vd">11d</span>
+          <span class="vs"><span class="ko">메타데이터</span><span class="en">metadata</span></span></div>
+        <p><span class="ko">작품이 어떤 장르 조합에 속하는지를 0/1로 표시한다.</span><span class="en">Which genre combination a film belongs to, as binary flags.</span></p>
+        <dl>
+          <dt><span class="ko">만드는 법</span><span class="en">How</span></dt>
+          <dd><span class="ko">Box Office Mojo의 장르 표기를 멀티핫으로 인코딩한다. 학습 데이터에서 20회 이상 등장한 11개 장르만 사용한다.</span><span class="en">Genres from Box Office Mojo are multi-hot encoded, restricted to the 11 that appear at least 20 times in training.</span></dd>
+          <dt><span class="ko">설계 근거</span><span class="en">Why</span></dt>
+          <dd><span class="ko">작품당 평균 3.43개 장르가 붙는다. 첫 장르만 취하면 Action·Sci-Fi·Thriller와 Action·Comedy·Romance가 모두 &ldquo;액션물&rdquo;로 뭉뚱그려진다.</span><span class="en">Films carry 3.43 genres on average. Keeping only the first would collapse Action/Sci-Fi/Thriller and Action/Comedy/Romance into one label.</span></dd>
+        </dl>
+      </article>
+      <article class="vcard" style="--c:var(--meta)">
+        <div class="vh"><span class="vn">Historical Mean OW</span><span class="vd">4d</span>
+          <span class="vs"><span class="ko">메타데이터</span><span class="en">metadata</span></span></div>
+        <p><span class="ko">비슷한 성격의 과거 작품들이 얼마를 벌었는지를 요약한다.</span><span class="en">What comparable films earned in the past.</span></p>
+        <dl>
+          <dt><span class="ko">만드는 법</span><span class="en">How</span></dt>
+          <dd><span class="ko">장르별·배급사별·개봉월별 평균 실적과 프랜차이즈 직전작 실적. 평균은 모두 학습 데이터에서만 계산한다.</span><span class="en">Average revenue by genre, distributor and release month, plus the previous film in the franchise. All averages come from training data only.</span></dd>
+          <dt><span class="ko">설계 근거</span><span class="en">Why</span></dt>
+          <dd><span class="ko">전작이 없는 작품은 학습 데이터의 <em>중앙값</em>으로 대체한다. 평균으로 채우면 소수 대형 흥행작이 끌어올린 값이 들어가 오리지널 신작이 과대평가된다.</span><span class="en">Films without a predecessor get the training <em>median</em>, not the mean — a heavy-tailed average would inflate expectations for original titles.</span></dd>
+        </dl>
+      </article>
+      <article class="vcard" style="--c:var(--cmt)">
+        <div class="vh"><span class="vn">Audience Signal</span><span class="vd">4d</span>
+          <span class="vs"><span class="ko">댓글</span><span class="en">comments</span></span></div>
+        <p><span class="ko">반응이 얼마나 많고 어느 쪽으로 기울었는지를 센다.</span><span class="en">How much reaction there was, and which way it leaned.</span></p>
+        <dl>
+          <dt><span class="ko">만드는 법</span><span class="en">How</span></dt>
+          <dd><span class="ko">전체 댓글 수와 긍정·중립·부정 댓글 수. 감성은 트위터 코퍼스로 사전학습된 RoBERTa 3분류 모델로 산출한다.</span><span class="en">Total comment count plus positive, neutral and negative counts, labelled by a RoBERTa sentiment model pretrained on Twitter text.</span></dd>
+          <dt><span class="ko">설계 근거</span><span class="en">Why</span></dt>
+          <dd><span class="ko">여섯 뷰 중 유일하게 log 변환을 적용한다. 작품 간 댓글 수 격차가 1,500배에 달해, 원 척도로 두면 소수 대형 작품이 학습을 지배한다.</span><span class="en">The only view with a log transform. Comment volume varies 1,500-fold across films, so raw counts would let a few blockbusters dominate training.</span></dd>
+        </dl>
+      </article>
+      <article class="vcard" style="--c:var(--cmt)">
+        <div class="vh"><span class="vn">Summary Embedding</span><span class="vd">16d</span>
+          <span class="vs"><span class="ko">댓글</span><span class="en">comments</span></span></div>
+        <p><span class="ko">반응의 <em>내용</em>을 담는다. 군집 신호가 유형 분포라면 이쪽은 무슨 말을 했는지다.</span><span class="en">What the audience actually said, rather than which type their reaction falls into.</span></p>
+        <dl>
+          <dt><span class="ko">만드는 법</span><span class="en">How</span></dt>
+          <dd><span class="ko">좋아요 상위 80건과 무작위 80건을 뽑아 GPT-4o-mini로 120~180단어 요약을 만들고, 이를 임베딩해 PCA로 16차원으로 줄인다.</span><span class="en">Top-80 liked and 80 random comments are summarised into 120-180 words by GPT-4o-mini, then embedded and reduced to 16 dimensions by PCA.</span></dd>
+          <dt><span class="ko">설계 근거</span><span class="en">Why</span></dt>
+          <dd><span class="ko">요약은 다섯 관점을 반드시 포함하도록 지시했다. 감성 강도, 관람 의사, 관객 저변, 회의론, 대중적 화제성이다. 특히 <em>관객 저변</em>은 열기가 팬덤에 갇혔는지 일반 관객으로 번졌는지를 가른다.</span><span class="en">The summary must cover five angles: sentiment intensity, viewing intent, audience breadth, scepticism, and mainstream buzz. <em>Breadth</em> is what separates fandom heat from a wide-release audience.</span></dd>
+        </dl>
+      </article>
+      <article class="vcard" style="--c:var(--vis)">
+        <div class="vh"><span class="vn">Trailer Visual</span><span class="vd">16d</span>
+          <span class="vs"><span class="ko">영상</span><span class="en">footage</span></span></div>
+        <p><span class="ko">트레일러의 장르적 톤, 제작 규모, 시각적 볼거리를 수치로 옮긴다.</span><span class="en">The trailer&rsquo;s genre tone, production scale and spectacle, as numbers.</span></p>
+        <dl>
+          <dt><span class="ko">만드는 법</span><span class="en">How</span></dt>
+          <dd><span class="ko">360p로 내려받아 16구간의 <em>중앙</em>에서 프레임을 뽑고, CLIP ViT-B/32로 각 512차원 임베딩 후 L2 정규화해 평균한다. 다시 PCA로 16차원.</span><span class="en">Downloaded at 360p, one frame from the <em>middle</em> of each of 16 segments, embedded with CLIP ViT-B/32, L2-normalised, mean-pooled, then PCA to 16 dimensions.</span></dd>
+          <dt><span class="ko">설계 근거</span><span class="en">Why</span></dt>
+          <dd><span class="ko">구간 시작이 아닌 중앙을 쓰는 이유는 배급사 로고나 제목 카드를 피하기 위해서다. 조회수·좋아요는 수집 시점의 누적값이라 개봉 후 유입이 섞여 제외했다.</span><span class="en">Mid-segment sampling avoids distributor logos and title cards. View and like counts were excluded because they accumulate after release.</span></dd>
+        </dl>
+      </article>
+    </div>
       <div class="legend" style="margin-top:20px">
         <span><i class="chip" style="background:var(--cmt)"></i><span class="ko">댓글 기반</span><span class="en">from comments</span></span>
         <span><i class="chip" style="background:var(--meta)"></i><span class="ko">메타데이터</span><span class="en">metadata</span></span>
