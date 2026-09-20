@@ -47,8 +47,8 @@
   *{box-sizing:border-box}
   body{background:var(--ground);color:var(--ink);font-family:var(--body);
        font-weight:300;line-height:1.7;margin:0;-webkit-font-smoothing:antialiased}
-  .wrap{max-width:1000px;margin:0 auto;padding-inline:20px}
-  .col{max-width:680px;margin-inline:auto;text-align:center}
+  .wrap{max-width:920px;margin:0 auto;padding-inline:20px}
+  .col{max-width:680px}
   p{margin:0 0 .9em;color:var(--ink-2)}
   h1,h2,h3{text-wrap:balance;margin:0}
   a{color:var(--cmt)}
@@ -97,7 +97,7 @@
   nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;
           background:color-mix(in srgb,var(--ground) 92%,transparent);
           backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-  .navin{display:flex;align-items:stretch;gap:16px;max-width:1000px;margin-inline:auto;padding-inline:20px}
+  .navin{display:flex;align-items:stretch;gap:16px;max-width:920px;margin-inline:auto;padding-inline:20px}
   nav.toc ul{display:flex;gap:0;list-style:none;margin:0;padding:0;
              overflow-x:auto;scrollbar-width:none;flex:1}
   nav.toc ul::-webkit-scrollbar{display:none}
@@ -112,9 +112,9 @@
 
   section{padding-block:clamp(52px,7vw,80px);scroll-margin-top:60px}
   section.alt{background:var(--surface)}
-  .shead{margin-bottom:28px;text-align:center}
-  .shead .band{width:84px;margin:0 auto 18px}
-  .shead .row{display:flex;align-items:baseline;justify-content:center;gap:14px}
+  .shead{margin-bottom:28px}
+  .shead .band{width:84px;margin-bottom:18px}
+  .shead .row{display:flex;align-items:baseline;gap:14px}
   .shead .n{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;color:var(--muted);
             border:1px solid var(--line);border-radius:3px;padding:3px 7px;
             background:var(--ground);align-self:flex-start;margin-top:5px}
@@ -123,17 +123,14 @@
      letter-spacing:-.012em;line-height:1.22}
   h3{font-size:14px;font-weight:600;margin:30px 0 10px;color:var(--ink)}
   /* 섹션 도입 문장·보조 설명은 머리글과 같이 가운데 정렬 */
-  .lead{font-size:16.5px;color:var(--ink);font-weight:300;
-        text-align:center;max-width:600px;margin-inline:auto}
-  .note{font-size:12.5px;color:var(--muted);line-height:1.6;
-        text-align:center;max-width:620px;margin-inline:auto}
+  .lead{font-size:16.5px;color:var(--ink);font-weight:300}
+  .note{font-size:12.5px;color:var(--muted);line-height:1.6}
 
   figure{margin:26px 0 0}
   figure img,figure svg{display:block;width:100%;height:auto;border:1px solid var(--line);
              border-radius:5px;background:var(--surface)}
   figure svg{padding:6px 0}
-  figcaption{font-size:12.5px;color:var(--muted);margin-top:10px;line-height:1.55;
-             text-align:center;max-width:760px;margin-inline:auto}
+  figcaption{font-size:12.5px;color:var(--muted);margin-top:11px;line-height:1.55;max-width:720px}
   figcaption b{font-family:var(--mono);font-weight:500;color:var(--ink-2);font-size:11.5px}
 
   .views{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);
@@ -152,22 +149,20 @@
 
   /* 뷰 상세 카드 */
   .vcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));
-          gap:14px;margin-block:24px;text-align:center}
+          gap:14px;margin-block:24px}
   .vcard{background:var(--surface);border:1px solid var(--line);border-radius:6px;
-         border-top:3px solid var(--c);padding:16px 18px}
+         border-left:3px solid var(--c);padding:16px 18px}
   section.alt .vcard{background:var(--ground)}
-  .vcard .vh{display:flex;align-items:baseline;justify-content:center;gap:10px;
-             flex-wrap:wrap;margin-bottom:9px}
+  .vcard .vh{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:9px}
   .vcard .vn{font-family:var(--mono);font-size:13.5px;font-weight:600;color:var(--c)}
   .vcard .vd{font-family:var(--mono);font-size:11.5px;color:var(--muted);
              background:var(--surface-2);padding:2px 7px;border-radius:3px}
-  .vcard .vs{font-size:11.5px;color:var(--muted)}
+  .vcard .vs{font-size:11.5px;color:var(--muted);margin-left:auto}
   .vcard p{font-size:13px;margin:0 0 10px;line-height:1.6}
   .vcard dl{margin:0;display:grid;gap:6px;font-size:12.5px}
   .vcard dt{font-weight:600;color:var(--ink);font-size:11px;letter-spacing:.04em}
   .vcard dd{margin:0 0 4px;color:var(--muted);line-height:1.55}
-  .legend{display:flex;flex-wrap:wrap;justify-content:center;gap:7px 18px;font-size:12px;
-          color:var(--muted);margin-top:12px}
+  .legend{display:flex;flex-wrap:wrap;gap:7px 18px;font-size:12px;color:var(--muted);margin-top:12px}
   .legend span{display:inline-flex;align-items:center;gap:6px}
 
   .tw{overflow-x:auto;margin-block:20px;border:1px solid var(--line);border-radius:6px}
@@ -175,18 +170,18 @@
   section.alt figure img,section.alt figure svg{background:var(--ground)}
   section.alt pre{background:var(--ground)}
   table{border-collapse:collapse;width:100%;font-size:13px;background:var(--surface)}
-  th,td{padding:9px 13px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+  th,td{padding:9px 13px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
   th{font-weight:500;font-size:11px;letter-spacing:.05em;text-transform:uppercase;
      color:var(--muted);background:var(--surface-2)}
-  td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:center}
+  td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
   tr:last-child td{border-bottom:none}
   tr.best td{background:var(--cmt-soft)}
   tr.best td:first-child{font-weight:600;color:var(--ink)}
 
   ul.pts{list-style:none;padding:0;margin:18px 0 0;display:grid;gap:14px}
-  ul.pts li{border-top:1px solid var(--line);padding-top:14px;font-size:13.5px;color:var(--ink-2)}
+  ul.pts li{border-left:2px solid var(--line);padding-left:15px;font-size:13.5px;color:var(--ink-2)}
   ul.pts b{display:block;color:var(--ink);font-weight:500;margin-bottom:2px;font-size:14px}
-  ul.pts li.hi{border-top-color:var(--cmt);border-top-width:2px}
+  ul.pts li.hi{border-left-color:var(--cmt)}
 
   footer{padding-block:38px 60px;border-top:1px solid var(--line);font-size:12.5px;
          color:var(--muted);text-align:center}
