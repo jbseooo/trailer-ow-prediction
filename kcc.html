@@ -78,7 +78,6 @@
   <div class="stats">
     <div class="stat"><span class="k">135</span><span class="l"><span class="ko">분석 대상 영화</span><span class="en">films analyzed</span></span></div>
     <div class="stat"><span class="k">4</span><span class="l"><span class="ko">독립 뷰</span><span class="en">independent views</span></span></div>
-    <div class="stat"><span class="k">$23.65M</span><span class="l"><span class="ko">RMSE (5-Fold CV)</span><span class="en">RMSE (5-fold CV)</span></span></div>
     <div class="stat"><span class="k">40.9%</span><span class="l"><span class="ko">MAPE (5-Fold CV)</span><span class="en">MAPE (5-fold CV)</span></span></div>
   </div>
 </div>
@@ -181,20 +180,20 @@
 <section id="result"><div class="wrap">
     <div class="shead"><div class="band"><i></i><i></i><i></i></div><div class="row"><span class="n">04</span><h2><span class="ko">연구 결과</span><span class="en">Results</span></h2></div></div>
     <div class="col">
-      <p class="lead"><span class="ko">같은 피처셋과 학습 조건에서 Stratified 5-Fold 교차검증으로 평가했다. 제안 모델이 모든 비교 모델보다 RMSE와 MAPE가 낮았다.</span><span class="en">All models were evaluated with stratified five-fold cross-validation on the same features and training setup. The proposed model had the lowest RMSE and MAPE of all.</span></p>
+      <p class="lead"><span class="ko">같은 피처셋과 학습 조건에서 Stratified 5-Fold 교차검증으로 평가했다. 제안 모델의 MAPE가 가장 낮았다.</span><span class="en">All models were evaluated with stratified five-fold cross-validation on the same features and training setup. The proposed model had the lowest MAPE of all.</span></p>
       <div class="tw">
         <table>
-          <caption><span class="ko">논문 표 2. 모델별 성능 비교 (백만 달러 단위로 반올림)</span><span class="en">Paper Table 2. Model comparison (rounded to $M)</span></caption>
-          <thead><tr><th><span class="ko">모델</span><span class="en">Model</span></th><th class="n">RMSE</th><th class="n">MAPE</th></tr></thead>
+          <caption><span class="ko">논문 표 2. 모델별 성능 비교 (MAPE)</span><span class="en">Paper Table 2. Model comparison (MAPE)</span></caption>
+          <thead><tr><th><span class="ko">모델</span><span class="en">Model</span></th><th class="n">MAPE</th></tr></thead>
           <tbody>
-            <tr><td>SVR</td><td class="n">$29.90M</td><td class="n">59.2%</td></tr>
-            <tr><td>Random Forest</td><td class="n">$29.01M</td><td class="n">51.0%</td></tr>
-            <tr><td>MLP</td><td class="n">$27.63M</td><td class="n">45.2%</td></tr>
-            <tr class="best"><td>MvFS <span class="ko">(제안)</span><span class="en">(ours)</span></td><td class="n lo">$23.65M</td><td class="n lo">40.9%</td></tr>
+            <tr><td>SVR</td><td class="n">59.2%</td></tr>
+            <tr><td>Random Forest</td><td class="n">51.0%</td></tr>
+            <tr><td>MLP</td><td class="n">45.2%</td></tr>
+            <tr class="best"><td>MvFS <span class="ko">(제안)</span><span class="en">(ours)</span></td><td class="n lo">40.9%</td></tr>
           </tbody>
         </table>
       </div>
-      <p><span class="ko">단일 MLP와 비교하면 RMSE가 약 399만 달러, MAPE가 4.3%p 낮다. 피처 집합 간 이질성을 뷰로 분리하고 어텐션으로 동적으로 합치는 구조가 유효하다는 뜻이다.</span><span class="en">Against a single MLP, RMSE is about $3.99M lower and MAPE 4.3pp lower &mdash; evidence that separating heterogeneous feature sets into views and fusing them dynamically with attention pays off.</span></p>
+      <p><span class="ko">단일 MLP보다 MAPE가 4.3%p 낮다. 피처 집합 간 이질성을 뷰로 분리하고 어텐션으로 동적으로 합치는 구조가 유효하다는 뜻이다.</span><span class="en">Against a single MLP, MAPE is 4.3pp lower &mdash; evidence that separating heterogeneous feature sets into views and fusing them dynamically with attention pays off.</span></p>
 
       <h3><span class="ko">뷰별 Attention 가중치</span><span class="en">Attention weight by view</span></h3>
     </div>
@@ -229,7 +228,7 @@
 <section id="conclusion" class="alt"><div class="wrap">
     <div class="shead"><div class="band"><i></i><i></i><i></i></div><div class="row"><span class="n">05</span><h2><span class="ko">결론</span><span class="en">Conclusion</span></h2></div></div>
     <div class="col">
-      <p class="lead"><span class="ko">제안 모델은 RMSE 2,365만 달러, MAPE 40.9%로 모든 비교 모델보다 우수했다.</span><span class="en">The proposed model reached an RMSE of $23.65M and a MAPE of 40.9%, ahead of every baseline.</span></p>
+      <p class="lead"><span class="ko">제안 모델은 MAPE 40.9%로 모든 비교 모델보다 우수했다.</span><span class="en">The proposed model reached a MAPE of 40.9%, ahead of every baseline.</span></p>
       <ul class="pts">
         <li><b><span class="ko">선제적 의사결정의 근거</span><span class="en">Grounds for early decisions</span></b><span class="ko">사전 예매나 평론가 시사 이전의 트레일러 댓글만으로 유의미한 OW 예측이 가능함을 확인했다.</span><span class="en">Meaningful OW forecasts are possible from trailer comments alone, before presales or critics&rsquo; screenings.</span></li>
         <li><b><span class="ko">해석 가능성</span><span class="en">Interpretability</span></b><span class="ko">뷰별 어텐션 가중치로 흥행을 주도하는 정보 원천을 정량적으로 파악해, 예측 근거를 함께 제시한다.</span><span class="en">View-level attention weights quantify which information source drives each forecast, so the rationale comes with the number.</span></li>
