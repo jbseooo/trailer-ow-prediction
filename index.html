@@ -14,197 +14,25 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='2' fill='%232a5179'/%3E%3Crect x='3' y='4' width='10' height='2' fill='white'/%3E%3Crect x='3' y='7.5' width='7' height='2' fill='white' opacity='.75'/%3E%3Crect x='3' y='11' width='4' height='2' fill='white' opacity='.5'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
-<style>
-  :root{color-scheme:light dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-  img{max-width:100%}
-  [hidden]{display:none!important}
-</style>
+<link rel="stylesheet" href="site.css">
 </head>
 <body>
-<style>
-  /* 색은 논문 그림과 같은 팔레트: 댓글 #2a5179 · 메타데이터 #a8701f · 영상 #2e6d5c */
-  :root{
-    --ground:#f6f4f0; --surface:#ffffff; --surface-2:#eeebe5;
-    --ink:#1c1c1c; --ink-2:#3f3c38; --muted:#6c6760; --line:#dcd7ce;
-    --cmt:#2a5179; --meta:#a8701f; --meta-ink:#87590f; --vis:#2e6d5c;
-    --cmt-soft:#e7edf4; --meta-soft:#f6eedf; --vis-soft:#e4eeea;
-    --img-filter:none;
-    --display:'Gowun Batang',Georgia,'Times New Roman',serif;
-    --body:'IBM Plex Sans KR','Apple SD Gothic Neo',system-ui,sans-serif;
-    --mono:'IBM Plex Mono','SFMono-Regular',Consolas,monospace;
-  }
-  @media (prefers-color-scheme:dark){
-    :root:not([data-theme="light"]){
-      --ground:#151412; --surface:#1c1b18; --surface-2:#28261f;
-      --ink:#eeebe5; --ink-2:#c8c3ba; --muted:#979188; --line:#34312b;
-      --cmt:#8aaedb; --meta:#d9a24c; --meta-ink:#d9a24c; --vis:#4fa184;
-      --cmt-soft:#1c2633; --meta-soft:#2e2517; --vis-soft:#172a23;
-      --img-filter:brightness(.92);
-    }
-  }
-  :root[data-theme="dark"]{
-    --ground:#151412; --surface:#1c1b18; --surface-2:#28261f;
-    --ink:#eeebe5; --ink-2:#c8c3ba; --muted:#979188; --line:#34312b;
-    --cmt:#8aaedb; --meta:#d9a24c; --meta-ink:#d9a24c; --vis:#4fa184;
-    --cmt-soft:#1c2633; --meta-soft:#2e2517; --vis-soft:#172a23;
-    --img-filter:brightness(.92);
-  }
-  *{box-sizing:border-box}
-  body{background:var(--ground);color:var(--ink);font-family:var(--body);
-       font-weight:300;line-height:1.7;margin:0;-webkit-font-smoothing:antialiased}
-  .wrap{max-width:920px;margin:0 auto;padding-inline:20px}
-  .col{max-width:680px}
-  p{margin:0 0 .9em;color:var(--ink-2)}
-  h1,h2,h3{text-wrap:balance;margin:0}
-  h1,h2,h3,.lead,.sub,ul.pts b{word-break:keep-all}
-  a{color:var(--cmt)}
-  strong{font-weight:600;color:var(--ink)}
-  em{font-style:normal;color:var(--ink);font-weight:500}
-  .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
 
-  /* 언어 전환 — 기본은 한국어 */
-  :root[data-lang="en"] .ko{display:none}
-  :root:not([data-lang="en"]) .en{display:none}
-  .langsw{display:flex;gap:2px;background:var(--surface-2);border-radius:4px;padding:2px;align-self:center}
-  .langsw button{font-family:var(--mono);font-size:11px;letter-spacing:.06em;border:0;
-    background:transparent;color:var(--muted);padding:4px 9px;border-radius:3px;cursor:pointer}
-  .langsw button[aria-pressed="true"]{background:var(--surface);color:var(--ink);font-weight:600}
-  .langsw button:focus-visible{outline:2px solid var(--cmt);outline-offset:1px}
-
-  /* 세 갈래 데이터의 평균 어텐션 비중(댓글 .472 · 메타 .410 · 영상 .118)을 띠 길이로 */
-  .band{height:3px;display:flex;overflow:hidden}
-  .band i{display:block;height:100%}
-  .band i:nth-child(1){background:var(--cmt);flex:47.2}
-  .band i:nth-child(2){background:var(--meta);flex:41}
-  .band i:nth-child(3){background:var(--vis);flex:11.8}
-
-  header.hero{padding-block:clamp(40px,8vw,80px) 34px;text-align:center}
-  .hero > *{margin-inline:auto}
-  h1{font-family:var(--display);font-weight:700;letter-spacing:-.012em;
-     font-size:clamp(25px,4.3vw,41px);line-height:1.28;margin-bottom:20px;max-width:860px}
-  .sub{font-size:clamp(15px,1.9vw,17px);color:var(--ink-2);max-width:620px;margin-bottom:30px}
-  .hero .band{max-width:320px}
-  @media (max-width:600px){h1 br{display:none} h1{font-size:23px}}
-  .byline{display:flex;flex-wrap:wrap;justify-content:center;gap:5px 20px;font-size:13.5px;
-          color:var(--muted);padding-top:22px;border-top:1px solid var(--line);max-width:680px}
-  .byline b{font-weight:500;color:var(--ink)}
-
-  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;
-         background:var(--line);border:1px solid var(--line);border-radius:4px;
-         overflow:hidden;margin-block:40px}
-  .stat{background:var(--surface);padding:18px 20px}
-  .stat .k{font-family:var(--mono);font-weight:600;font-size:clamp(21px,3.2vw,28px);
-           letter-spacing:-.02em;display:block;line-height:1.1}
-  .stat .l{font-size:12px;color:var(--muted);margin-top:7px;display:block}
-
-  nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;
-          background:color-mix(in srgb,var(--ground) 92%,transparent);
-          backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-  .navin{display:flex;align-items:stretch;gap:16px;max-width:920px;margin-inline:auto;padding-inline:20px}
-  nav.toc ul{display:flex;gap:0;list-style:none;margin:0;padding:0;
-             overflow-x:auto;scrollbar-width:none;flex:1}
-  nav.toc ul::-webkit-scrollbar{display:none}
-  nav.toc a{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);
-            text-decoration:none;white-space:nowrap;padding:13px 14px;
-            border-bottom:2px solid transparent;transition:color .15s,border-color .15s}
-  nav.toc a .i{font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;opacity:.65}
-  nav.toc a:hover,nav.toc a:focus-visible{color:var(--ink)}
-  nav.toc a[aria-current="true"]{color:var(--ink);font-weight:500;border-bottom-color:var(--cmt)}
-  nav.toc a[aria-current="true"] .i{color:var(--cmt);opacity:1}
-
-  section{padding-block:clamp(52px,7vw,80px);scroll-margin-top:60px}
-  section.alt{background:var(--surface)}
-  .shead{margin-bottom:28px}
-  .shead .band{width:84px;margin-bottom:18px}
-  .shead .row{display:flex;align-items:baseline;gap:14px}
-  .shead .n{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;color:var(--muted);
-            border:1px solid var(--line);border-radius:3px;padding:3px 7px;
-            background:var(--ground);align-self:flex-start;margin-top:5px}
-  section.alt .shead .n{background:var(--surface-2)}
-  h2{font-family:var(--display);font-weight:700;font-size:clamp(24px,3.6vw,33px);
-     letter-spacing:-.012em;line-height:1.22}
-  h3{font-size:15px;font-weight:600;margin:40px 0 10px;color:var(--ink)}
-  .lead{font-size:16.5px;color:var(--ink);font-weight:300}
-  .note{font-size:12.5px;color:var(--muted);line-height:1.6}
-
-  figure{margin:26px 0 0}
-  figure > a{display:block;cursor:zoom-in}
-  figure.narrow{max-width:600px}
-  figure img{display:block;width:100%;height:auto;border:1px solid var(--line);
-             border-radius:3px;background:#fff;filter:var(--img-filter)}
-  figure svg{display:block;width:100%;height:auto;border:1px solid var(--line);
-             border-radius:3px;background:var(--surface);padding:6px 0}
-  section.alt figure svg{background:var(--ground)}
-  figcaption{font-size:12.5px;color:var(--muted);margin-top:11px;line-height:1.6;max-width:720px}
-  figcaption b{font-family:var(--mono);font-weight:500;color:var(--ink-2);font-size:11.5px;margin-right:6px}
-  .svgmeta{fill:var(--meta-ink)}
-
-  ol.steps{list-style:none;padding:0;margin:20px 0 0;counter-reset:s;display:grid;gap:10px}
-  ol.steps li{counter-increment:s;display:grid;grid-template-columns:28px 1fr;gap:4px 10px;
-              font-size:13.5px;color:var(--ink-2)}
-  ol.steps li::before{content:counter(s);font-family:var(--mono);font-size:11.5px;color:var(--muted);
-              border:1px solid var(--line);border-radius:3px;text-align:center;height:22px;line-height:20px}
-  ol.steps b{color:var(--ink);font-weight:500}
-
-  /* 뷰 상세 카드 */
-  .vcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
-          gap:14px;margin-block:24px}
-  .vcard{background:var(--ground);border:1px solid var(--line);border-radius:4px;
-         border-left:3px solid var(--c);padding:16px 18px}
-  .vcard .vh{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:9px}
-  .vcard .vn{font-family:var(--mono);font-size:13.5px;font-weight:600;color:var(--t,var(--c))}
-  .vcard .vd{font-family:var(--mono);font-size:11.5px;color:var(--muted);
-             background:var(--surface-2);padding:2px 7px;border-radius:3px}
-  .vcard .vs{font-size:11.5px;color:var(--muted);margin-left:auto}
-  .vcard p{font-size:13px;margin:0 0 10px;line-height:1.6}
-  .vcard dl{margin:0;display:grid;gap:6px;font-size:12.5px}
-  .vcard dt{font-weight:600;color:var(--ink);font-size:11px;letter-spacing:.04em}
-  .vcard dd{margin:0 0 4px;color:var(--muted);line-height:1.55}
-  .legend{display:flex;flex-wrap:wrap;gap:7px 18px;font-size:12px;color:var(--muted);margin-top:12px}
-  .legend span{display:inline-flex;align-items:center;gap:6px}
-  .chip{width:10px;height:10px;display:inline-block;flex:none}
-
-  .tw{overflow-x:auto;margin-block:20px;border:1px solid var(--line);border-radius:4px}
-  table{border-collapse:collapse;width:100%;font-size:13px;background:var(--surface)}
-  section.alt table,section.alt .stat{background:var(--ground)}
-  th,td{padding:9px 13px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
-  th{font-weight:500;font-size:11px;letter-spacing:.05em;color:var(--muted);background:var(--surface-2)}
-  th.n{text-align:right}
-  td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
-  td.lo{font-weight:600;color:var(--ink)}
-  td.w{white-space:normal;min-width:180px}
-  tr:last-child td{border-bottom:none}
-  tr.best td{background:var(--cmt-soft)}
-  tr.best td:first-child{font-weight:600;color:var(--ink)}
-  tr.sum td{border-top:1px solid var(--muted)}
-  caption{caption-side:bottom;text-align:left;font-size:12px;color:var(--muted);padding:9px 13px}
-
-  ul.pts{list-style:none;padding:0;margin:18px 0 0;display:grid;gap:14px}
-  ul.pts li{border-left:2px solid var(--line);padding-left:15px;font-size:13.5px;color:var(--ink-2)}
-  ul.pts b{display:block;color:var(--ink);font-weight:500;margin-bottom:2px;font-size:14px}
-  ul.pts li.hi{border-left-color:var(--cmt)}
-
-  blockquote{margin:40px 0 0;padding:4px 0 4px 18px;border-left:2px solid var(--ink);
-             font-family:var(--display);font-size:17px;line-height:1.75;color:var(--ink)}
-  blockquote p{color:var(--ink);margin:0}
-  blockquote footer{border:0;padding:10px 0 0;text-align:left;font-family:var(--body);font-size:12px}
-
-  .refs{margin:22px 0 0;padding:0;list-style:none;font-size:12px;color:var(--muted);display:grid;gap:4px}
-
-  body > .wrap > footer{padding-block:38px 60px;border-top:1px solid var(--line);font-size:12.5px;
-         color:var(--muted);text-align:center}
-  body > .wrap > footer .band{max-width:380px;margin-inline:auto}
-  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-</style>
+<div class="tabbar"><div class="wrap">
+  <nav aria-label="논문 버전">
+    <a href="./" aria-current="page"><span class="ko">석사 학위논문</span><span class="en">Master&rsquo;s Thesis</span><span class="t">6-View</span></a>
+    <a href="kcc.html"><span class="ko">KCC 2026 논문</span><span class="en">KCC 2026 Paper</span><span class="t">4-View</span></a>
+  </nav>
+</div></div>
 
 <div class="wrap">
   <header class="hero">
+    <p class="eyebrow"><span class="ko"><b>석사학위논문</b> · 고려대학교 SW·AI 융합대학원 빅데이터융합학과</span><span class="en"><b>Master&rsquo;s Thesis</b> · Dept. of Big Data Convergence, Graduate School of SW·AI Convergence, Korea University</span></p>
     <h1><span class="ko">유튜브 트레일러 댓글 및 영상 정보를 활용한 <br><span style="white-space:nowrap">Multi-view</span> Feature Selection 기반 <br>개봉 첫 주말 박스오피스 예측</span><span class="en">Opening Weekend Box Office Prediction <br>Based on <span style="white-space:nowrap">Multi-View</span> Feature Selection <br>Using YouTube Trailer Comments and Video</span></h1>
     <p class="sub"><span class="ko">트레일러 공개 후 7일 동안 달린 댓글과 트레일러 영상으로 북미 개봉 첫 주말 박스오피스를 예측한다. 광고비와 상영관이 정해지는 개봉 4~8주 전에 이미 확보할 수 있는 정보다.</span><span class="en">We forecast North American opening weekend box office from comments posted in the first seven days after a trailer&rsquo;s release and from the trailer footage itself &mdash; information that already exists four to eight weeks before release, when ad budgets and screens are being decided.</span></p>
     <div class="band"><i></i><i></i><i></i></div>
     <div class="byline">
       <span><b>서정범 &middot; Jeongbeom Seo</b></span>
-      <span class="ko">고려대학교 SW·AI 융합대학원 빅데이터융합학과</span><span class="en">Dept. of Big Data Convergence, Korea University</span>
       <span class="ko">지도교수 강성구</span><span class="en">Advisor: Prof. SeongKu Kang</span>
     </div>
   </header>
@@ -758,51 +586,7 @@
   </footer>
 </div>
 
-<script>
-(function(){
-  var root=document.documentElement,
-      btns=document.querySelectorAll('[data-lang-set]'),
-      imgs=[].slice.call(document.querySelectorAll('img[data-alt-en]'));
-  imgs.forEach(function(im){im.dataset.altKo=im.alt;});
-  function apply(v){
-    if(v==='en'){root.setAttribute('data-lang','en');root.lang='en';}else{root.removeAttribute('data-lang');root.lang='ko';}
-    btns.forEach(function(b){b.setAttribute('aria-pressed', String(b.dataset.langSet===v));});
-    imgs.forEach(function(im){im.alt=(v==='en')?im.dataset.altEn:im.dataset.altKo;});
-  }
-  var saved='ko';
-  try{ if(localStorage.getItem('tw-lang')==='en') saved='en'; }catch(e){}
-  apply(saved);
-  btns.forEach(function(b){
-    b.addEventListener('click',function(){
-      var v=b.dataset.langSet;
-      apply(v);
-      try{localStorage.setItem('tw-lang',v);}catch(e){}
-    });
-  });
-
-  // 현재 읽고 있는 섹션을 내비에 표시
-  var links=[].slice.call(document.querySelectorAll('nav.toc a[href^="#"]')),
-      secs=links.map(function(a){return document.getElementById(a.getAttribute('href').slice(1));});
-  function mark(i){
-    links.forEach(function(a,k){
-      if(k===i){a.setAttribute('aria-current','true');}else{a.removeAttribute('aria-current');}
-    });
-  }
-  function current(){
-    var line=window.innerHeight*0.32, best=-1;
-    secs.forEach(function(el,k){
-      if(el && el.getBoundingClientRect().top<=line) best=k;
-    });
-    mark(best);
-  }
-  var tick=false;
-  window.addEventListener('scroll',function(){
-    if(tick) return; tick=true;
-    requestAnimationFrame(function(){current();tick=false;});
-  },{passive:true});
-  current();
-})();
-</script>
+<script src="site.js"></script>
 
 </body>
 </html>
