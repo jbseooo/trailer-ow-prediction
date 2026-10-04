@@ -3,15 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>유튜브 트레일러 정보 기반 개봉 첫 주말 실적 예측</title>
-<meta name="description" content="유튜브 트레일러 댓글과 영상만으로 북미 개봉 첫 주말 흥행을 예측하는 6-View MvFS 모델.">
+<title>유튜브 트레일러 댓글 및 영상 정보를 활용한 Multi-view Feature Selection 기반 개봉 첫 주말 박스오피스 예측</title>
+<meta name="description" content="트레일러 공개 후 7일 이내의 댓글과 트레일러 영상으로 북미 개봉 첫 주말 박스오피스를 예측하는 6-View MvFS 모델.">
 <meta name="author" content="서정범 Jeongbeom Seo">
 <meta property="og:type" content="website">
-<meta property="og:title" content="트레일러로 읽는 첫 주말">
-<meta property="og:description" content="유튜브 트레일러 댓글과 영상만으로 북미 개봉 첫 주말 흥행을 예측하는 6-View MvFS 모델.">
-<meta property="og:image" content="fig/fig4_1_model_comparison.png">
+<meta property="og:url" content="https://jbseooo.github.io/trailer-ow-prediction/">
+<meta property="og:title" content="유튜브 트레일러 댓글 및 영상 정보를 활용한 Multi-view Feature Selection 기반 개봉 첫 주말 박스오피스 예측">
+<meta property="og:description" content="트레일러 공개 후 7일 이내의 댓글과 트레일러 영상으로 북미 개봉 첫 주말 박스오피스를 예측하는 6-View MvFS 모델.">
+<meta property="og:image" content="https://jbseooo.github.io/trailer-ow-prediction/fig/f3-1-architecture.png">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%232a78d6'/%3E%3Crect x='3' y='4' width='10' height='2' fill='white'/%3E%3Crect x='3' y='7.5' width='7' height='2' fill='white' opacity='.75'/%3E%3Crect x='3' y='11' width='4' height='2' fill='white' opacity='.5'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='2' fill='%232a5179'/%3E%3Crect x='3' y='4' width='10' height='2' fill='white'/%3E%3Crect x='3' y='7.5' width='7' height='2' fill='white' opacity='.75'/%3E%3Crect x='3' y='11' width='4' height='2' fill='white' opacity='.5'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
   :root{color-scheme:light dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -21,28 +22,32 @@
 </head>
 <body>
 <style>
+  /* 색은 논문 그림과 같은 팔레트: 댓글 #2a5179 · 메타데이터 #a8701f · 영상 #2e6d5c */
   :root{
-    --ground:#f6f7f9; --surface:#ffffff; --surface-2:#eceff4;
-    --ink:#14171c; --ink-2:#39414d; --muted:#6b7480; --line:#dde2e9;
-    --cmt:#2a78d6; --meta:#b97c00; --vis:#15855f;
-    --cmt-soft:#e8f0fb; --meta-soft:#fbf2df; --vis-soft:#e3f3ed;
+    --ground:#f6f4f0; --surface:#ffffff; --surface-2:#eeebe5;
+    --ink:#1c1c1c; --ink-2:#3f3c38; --muted:#6c6760; --line:#dcd7ce;
+    --cmt:#2a5179; --meta:#a8701f; --meta-ink:#87590f; --vis:#2e6d5c;
+    --cmt-soft:#e7edf4; --meta-soft:#f6eedf; --vis-soft:#e4eeea;
+    --img-filter:none;
     --display:'Gowun Batang',Georgia,'Times New Roman',serif;
     --body:'IBM Plex Sans KR','Apple SD Gothic Neo',system-ui,sans-serif;
     --mono:'IBM Plex Mono','SFMono-Regular',Consolas,monospace;
   }
   @media (prefers-color-scheme:dark){
     :root:not([data-theme="light"]){
-      --ground:#111419; --surface:#171b22; --surface-2:#232932;
-      --ink:#eef1f5; --ink-2:#c2cad4; --muted:#8b94a1; --line:#2a313b;
-      --cmt:#5a9df0; --meta:#e0a733; --vis:#39b98c;
-      --cmt-soft:#16273d; --meta-soft:#332713; --vis-soft:#123027;
+      --ground:#151412; --surface:#1c1b18; --surface-2:#28261f;
+      --ink:#eeebe5; --ink-2:#c8c3ba; --muted:#979188; --line:#34312b;
+      --cmt:#8aaedb; --meta:#d9a24c; --meta-ink:#d9a24c; --vis:#4fa184;
+      --cmt-soft:#1c2633; --meta-soft:#2e2517; --vis-soft:#172a23;
+      --img-filter:brightness(.92);
     }
   }
   :root[data-theme="dark"]{
-    --ground:#111419; --surface:#171b22; --surface-2:#232932;
-    --ink:#eef1f5; --ink-2:#c2cad4; --muted:#8b94a1; --line:#2a313b;
-    --cmt:#5a9df0; --meta:#e0a733; --vis:#39b98c;
-    --cmt-soft:#16273d; --meta-soft:#332713; --vis-soft:#123027;
+    --ground:#151412; --surface:#1c1b18; --surface-2:#28261f;
+    --ink:#eeebe5; --ink-2:#c8c3ba; --muted:#979188; --line:#34312b;
+    --cmt:#8aaedb; --meta:#d9a24c; --meta-ink:#d9a24c; --vis:#4fa184;
+    --cmt-soft:#1c2633; --meta-soft:#2e2517; --vis-soft:#172a23;
+    --img-filter:brightness(.92);
   }
   *{box-sizing:border-box}
   body{background:var(--ground);color:var(--ink);font-family:var(--body);
@@ -51,43 +56,41 @@
   .col{max-width:680px}
   p{margin:0 0 .9em;color:var(--ink-2)}
   h1,h2,h3{text-wrap:balance;margin:0}
+  h1,h2,h3,.lead,.sub,ul.pts b{word-break:keep-all}
   a{color:var(--cmt)}
   strong{font-weight:600;color:var(--ink)}
+  em{font-style:normal;color:var(--ink);font-weight:500}
   .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
 
   /* 언어 전환 — 기본은 한국어 */
   :root[data-lang="en"] .ko{display:none}
   :root:not([data-lang="en"]) .en{display:none}
-  .langsw{display:flex;gap:2px;background:var(--surface-2);border-radius:5px;padding:2px}
+  .langsw{display:flex;gap:2px;background:var(--surface-2);border-radius:4px;padding:2px;align-self:center}
   .langsw button{font-family:var(--mono);font-size:11px;letter-spacing:.06em;border:0;
     background:transparent;color:var(--muted);padding:4px 9px;border-radius:3px;cursor:pointer}
   .langsw button[aria-pressed="true"]{background:var(--surface);color:var(--ink);font-weight:600}
   .langsw button:focus-visible{outline:2px solid var(--cmt);outline-offset:1px}
 
-  .band{height:3px;display:flex;border-radius:2px;overflow:hidden}
+  /* 세 갈래 데이터의 평균 어텐션 비중(댓글 .472 · 메타 .410 · 영상 .118)을 띠 길이로 */
+  .band{height:3px;display:flex;overflow:hidden}
   .band i{display:block;height:100%}
   .band i:nth-child(1){background:var(--cmt);flex:47.2}
   .band i:nth-child(2){background:var(--meta);flex:41}
   .band i:nth-child(3){background:var(--vis);flex:11.8}
 
-  header.hero{padding-block:clamp(40px,8vw,84px) 34px;text-align:center}
+  header.hero{padding-block:clamp(40px,8vw,80px) 34px;text-align:center}
   .hero > *{margin-inline:auto}
-  .hero h1{max-width:820px;text-wrap:normal}
-  .hero .sub{max-width:640px}
+  h1{font-family:var(--display);font-weight:700;letter-spacing:-.012em;
+     font-size:clamp(25px,4.3vw,41px);line-height:1.28;margin-bottom:20px;max-width:860px}
+  .sub{font-size:clamp(15px,1.9vw,17px);color:var(--ink-2);max-width:620px;margin-bottom:30px}
   .hero .band{max-width:320px}
-  .hero .byline{max-width:640px}
-  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
-           color:var(--muted);margin:0 0 20px}
-  h1{font-family:var(--display);font-weight:700;letter-spacing:-.015em;
-     font-size:clamp(32px,6vw,54px);line-height:1.15;margin-bottom:18px}
-  .sub{font-size:clamp(15.5px,2vw,18px);color:var(--ink-2);max-width:560px;margin-bottom:30px}
+  @media (max-width:600px){h1 br{display:none} h1{font-size:23px}}
   .byline{display:flex;flex-wrap:wrap;justify-content:center;gap:5px 20px;font-size:13.5px;
-          color:var(--muted);padding-top:22px;border-top:1px solid var(--line);
-          max-width:680px;margin-inline:auto}
+          color:var(--muted);padding-top:22px;border-top:1px solid var(--line);max-width:680px}
   .byline b{font-weight:500;color:var(--ink)}
 
   .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;
-         background:var(--line);border:1px solid var(--line);border-radius:6px;
+         background:var(--line);border:1px solid var(--line);border-radius:4px;
          overflow:hidden;margin-block:40px}
   .stat{background:var(--surface);padding:18px 20px}
   .stat .k{font-family:var(--mono);font-weight:600;font-size:clamp(21px,3.2vw,28px);
@@ -108,7 +111,6 @@
   nav.toc a:hover,nav.toc a:focus-visible{color:var(--ink)}
   nav.toc a[aria-current="true"]{color:var(--ink);font-weight:500;border-bottom-color:var(--cmt)}
   nav.toc a[aria-current="true"] .i{color:var(--cmt);opacity:1}
-  .langsw{align-self:center}
 
   section{padding-block:clamp(52px,7vw,80px);scroll-margin-top:60px}
   section.alt{background:var(--surface)}
@@ -121,40 +123,36 @@
   section.alt .shead .n{background:var(--surface-2)}
   h2{font-family:var(--display);font-weight:700;font-size:clamp(24px,3.6vw,33px);
      letter-spacing:-.012em;line-height:1.22}
-  h3{font-size:14px;font-weight:600;margin:30px 0 10px;color:var(--ink)}
-  /* 섹션 도입 문장·보조 설명은 머리글과 같이 가운데 정렬 */
+  h3{font-size:15px;font-weight:600;margin:40px 0 10px;color:var(--ink)}
   .lead{font-size:16.5px;color:var(--ink);font-weight:300}
   .note{font-size:12.5px;color:var(--muted);line-height:1.6}
 
   figure{margin:26px 0 0}
-  figure img,figure svg{display:block;width:100%;height:auto;border:1px solid var(--line);
-             border-radius:5px;background:var(--surface)}
-  figure svg{padding:6px 0}
-  figcaption{font-size:12.5px;color:var(--muted);margin-top:11px;line-height:1.55;max-width:720px}
-  figcaption b{font-family:var(--mono);font-weight:500;color:var(--ink-2);font-size:11.5px}
+  figure > a{display:block;cursor:zoom-in}
+  figure.narrow{max-width:600px}
+  figure img{display:block;width:100%;height:auto;border:1px solid var(--line);
+             border-radius:3px;background:#fff;filter:var(--img-filter)}
+  figure svg{display:block;width:100%;height:auto;border:1px solid var(--line);
+             border-radius:3px;background:var(--surface);padding:6px 0}
+  section.alt figure svg{background:var(--ground)}
+  figcaption{font-size:12.5px;color:var(--muted);margin-top:11px;line-height:1.6;max-width:720px}
+  figcaption b{font-family:var(--mono);font-weight:500;color:var(--ink-2);font-size:11.5px;margin-right:6px}
+  .svgmeta{fill:var(--meta-ink)}
 
-  .views{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);
-         border-radius:6px;overflow:hidden;margin-block:22px}
-  .view{background:var(--surface);display:grid;grid-template-columns:auto 1fr auto;
-        gap:12px;align-items:center;padding:12px 16px}
-  .chip{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
-  .view .nm{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--ink)}
-  .view .ds{font-size:12.5px;color:var(--muted);grid-column:2;line-height:1.45}
-  .view .dim{font-family:var(--mono);font-size:12px;color:var(--muted);
-             background:var(--surface-2);padding:3px 8px;border-radius:3px;white-space:nowrap}
-  @media (max-width:560px){
-    .view{grid-template-columns:auto 1fr;row-gap:4px}
-    .view .dim{grid-column:2;justify-self:start}
-  }
+  ol.steps{list-style:none;padding:0;margin:20px 0 0;counter-reset:s;display:grid;gap:10px}
+  ol.steps li{counter-increment:s;display:grid;grid-template-columns:28px 1fr;gap:4px 10px;
+              font-size:13.5px;color:var(--ink-2)}
+  ol.steps li::before{content:counter(s);font-family:var(--mono);font-size:11.5px;color:var(--muted);
+              border:1px solid var(--line);border-radius:3px;text-align:center;height:22px;line-height:20px}
+  ol.steps b{color:var(--ink);font-weight:500}
 
   /* 뷰 상세 카드 */
-  .vcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));
+  .vcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
           gap:14px;margin-block:24px}
-  .vcard{background:var(--surface);border:1px solid var(--line);border-radius:6px;
+  .vcard{background:var(--ground);border:1px solid var(--line);border-radius:4px;
          border-left:3px solid var(--c);padding:16px 18px}
-  section.alt .vcard{background:var(--ground)}
   .vcard .vh{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:9px}
-  .vcard .vn{font-family:var(--mono);font-size:13.5px;font-weight:600;color:var(--c)}
+  .vcard .vn{font-family:var(--mono);font-size:13.5px;font-weight:600;color:var(--t,var(--c))}
   .vcard .vd{font-family:var(--mono);font-size:11.5px;color:var(--muted);
              background:var(--surface-2);padding:2px 7px;border-radius:3px}
   .vcard .vs{font-size:11.5px;color:var(--muted);margin-left:auto}
@@ -164,35 +162,45 @@
   .vcard dd{margin:0 0 4px;color:var(--muted);line-height:1.55}
   .legend{display:flex;flex-wrap:wrap;gap:7px 18px;font-size:12px;color:var(--muted);margin-top:12px}
   .legend span{display:inline-flex;align-items:center;gap:6px}
+  .chip{width:10px;height:10px;display:inline-block;flex:none}
 
-  .tw{overflow-x:auto;margin-block:20px;border:1px solid var(--line);border-radius:6px}
-  section.alt table,section.alt .stat{background:var(--ground)}
-  section.alt figure img,section.alt figure svg{background:var(--ground)}
-  section.alt pre{background:var(--ground)}
+  .tw{overflow-x:auto;margin-block:20px;border:1px solid var(--line);border-radius:4px}
   table{border-collapse:collapse;width:100%;font-size:13px;background:var(--surface)}
+  section.alt table,section.alt .stat{background:var(--ground)}
   th,td{padding:9px 13px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
-  th{font-weight:500;font-size:11px;letter-spacing:.05em;text-transform:uppercase;
-     color:var(--muted);background:var(--surface-2)}
+  th{font-weight:500;font-size:11px;letter-spacing:.05em;color:var(--muted);background:var(--surface-2)}
+  th.n{text-align:right}
   td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+  td.lo{font-weight:600;color:var(--ink)}
+  td.w{white-space:normal;min-width:180px}
   tr:last-child td{border-bottom:none}
   tr.best td{background:var(--cmt-soft)}
   tr.best td:first-child{font-weight:600;color:var(--ink)}
+  tr.sum td{border-top:1px solid var(--muted)}
+  caption{caption-side:bottom;text-align:left;font-size:12px;color:var(--muted);padding:9px 13px}
 
   ul.pts{list-style:none;padding:0;margin:18px 0 0;display:grid;gap:14px}
   ul.pts li{border-left:2px solid var(--line);padding-left:15px;font-size:13.5px;color:var(--ink-2)}
   ul.pts b{display:block;color:var(--ink);font-weight:500;margin-bottom:2px;font-size:14px}
   ul.pts li.hi{border-left-color:var(--cmt)}
 
-  footer{padding-block:38px 60px;border-top:1px solid var(--line);font-size:12.5px;
+  blockquote{margin:40px 0 0;padding:4px 0 4px 18px;border-left:2px solid var(--ink);
+             font-family:var(--display);font-size:17px;line-height:1.75;color:var(--ink)}
+  blockquote p{color:var(--ink);margin:0}
+  blockquote footer{border:0;padding:10px 0 0;text-align:left;font-family:var(--body);font-size:12px}
+
+  .refs{margin:22px 0 0;padding:0;list-style:none;font-size:12px;color:var(--muted);display:grid;gap:4px}
+
+  body > .wrap > footer{padding-block:38px 60px;border-top:1px solid var(--line);font-size:12.5px;
          color:var(--muted);text-align:center}
-  footer .band{max-width:380px;margin-inline:auto}
+  body > .wrap > footer .band{max-width:380px;margin-inline:auto}
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 
 <div class="wrap">
   <header class="hero">
-    <h1><span class="ko">유튜브 트레일러 정보 기반<br>개봉 첫 주말 실적 예측</span><span class="en">Predicting Opening Weekend<br>from YouTube Trailer Information</span></h1>
-    <p class="sub"><span class="ko">예고편이 공개되고 일주일. 그 사이 쌓인 댓글과 영상만으로 북미 개봉 첫 주말 흥행을 예측한다.</span><span class="en">One week after a trailer goes live. Using only the comments and footage from that window, we predict North American opening weekend revenue.</span></p>
+    <h1><span class="ko">유튜브 트레일러 댓글 및 영상 정보를 활용한 <br><span style="white-space:nowrap">Multi-view</span> Feature Selection 기반 <br>개봉 첫 주말 박스오피스 예측</span><span class="en">Opening Weekend Box Office Prediction <br>Based on <span style="white-space:nowrap">Multi-View</span> Feature Selection <br>Using YouTube Trailer Comments and Video</span></h1>
+    <p class="sub"><span class="ko">트레일러 공개 후 7일 동안 달린 댓글과 트레일러 영상으로 북미 개봉 첫 주말 박스오피스를 예측한다. 광고비와 상영관이 정해지는 개봉 4~8주 전에 이미 확보할 수 있는 정보다.</span><span class="en">We forecast North American opening weekend box office from comments posted in the first seven days after a trailer&rsquo;s release and from the trailer footage itself &mdash; information that already exists four to eight weeks before release, when ad budgets and screens are being decided.</span></p>
     <div class="band"><i></i><i></i><i></i></div>
     <div class="byline">
       <span><b>서정범 &middot; Jeongbeom Seo</b></span>
@@ -210,7 +218,7 @@
       <li><a href="#model"><span class="i">03</span><span class="ko">모델</span><span class="en">Model</span></a></li>
       <li><a href="#results"><span class="i">04</span><span class="ko">실험</span><span class="en">Experiments</span></a></li>
       <li><a href="#attention"><span class="i">05</span><span class="ko">분석</span><span class="en">Analysis</span></a></li>
-      <li><a href="#limits"><span class="i">06</span><span class="ko">한계</span><span class="en">Limitations</span></a></li>
+      <li><a href="#limits"><span class="i">06</span><span class="ko">논의</span><span class="en">Discussion</span></a></li>
     </ul>
     <div class="langsw">
       <button type="button" data-lang-set="ko" aria-pressed="true">KO</button>
@@ -220,26 +228,24 @@
 </nav>
 
 <div class="wrap">
-
   <div class="stats">
     <div class="stat"><span class="k">217</span><span class="l"><span class="ko">분석 대상 영화</span><span class="en">films analyzed</span></span></div>
     <div class="stat"><span class="k">2.72M</span><span class="l"><span class="ko">최종 사용 댓글</span><span class="en">comments used</span></span></div>
     <div class="stat"><span class="k">38.8%</span><span class="l"><span class="ko">평가 MAPE</span><span class="en">test MAPE</span></span></div>
-    <div class="stat"><span class="k">$23.9M</span><span class="l"><span class="ko">평가 RMSE</span><span class="en">test RMSE</span></span></div>
+    <div class="stat"><span class="k">$23.86M</span><span class="l"><span class="ko">평가 RMSE</span><span class="en">test RMSE</span></span></div>
   </div>
-
 </div>
 
+<!-- ───────────────────────── 01 배경 ───────────────────────── -->
 <section id="problem" class="alt"><div class="wrap">
     <div class="shead"><div class="band"><i></i><i></i><i></i></div><div class="row"><span class="n">01</span><h2><span class="ko">연구 배경 및 문제 정의</span><span class="en">Background and Problem Definition</span></h2></div></div>
     <div class="col">
-      <p class="lead"><span class="ko">광고비와 상영관은 개봉 4~8주 전에 확정된다. 기존 예측 수단은 그보다 늦게 나온다.</span><span class="en">Ad budgets and screen counts are locked 4-8 weeks before release. Every existing forecasting tool arrives later than that.</span></p>
+      <p class="lead"><span class="ko">광고비와 상영관은 개봉 4~8주 전에 확정된다. 기존 예측 수단은 그보다 늦게 나온다.</span><span class="en">Ad budgets and screen counts are locked four to eight weeks before release. Existing forecasting tools arrive later than that.</span></p>
     </div>
 
     <figure>
       <svg viewBox="0 0 900 250" role="img" aria-label="개봉 전 타임라인: 자원 배분은 개봉 4~8주 전에 확정되지만 트래킹 서베이와 예매 추정은 그 이후에야 가능하다">
         <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 10 5 0 10z" fill="currentColor"/></marker></defs>
-        <!-- 축 -->
         <line x1="60" y1="150" x2="850" y2="150" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar)" opacity=".55"/>
         <text x="60" y="176" font-size="11.5" fill="currentColor" opacity=".7" font-family="monospace">-12w</text>
         <text x="300" y="176" font-size="11.5" fill="currentColor" opacity=".7" font-family="monospace">-8w</text>
@@ -250,9 +256,8 @@
         <text x="820" y="196" font-size="12" fill="currentColor" text-anchor="middle" class="ko">개봉</text>
         <text x="820" y="196" font-size="12" fill="currentColor" text-anchor="middle" class="en">Release</text>
 
-        <!-- 본 연구 입력 구간 -->
-        <rect x="80" y="96" width="70" height="38" rx="4" fill="var(--cmt)" opacity=".16"/>
-        <rect x="80" y="96" width="70" height="38" rx="4" fill="none" stroke="var(--cmt)" stroke-width="1.5"/>
+        <rect x="80" y="96" width="70" height="38" fill="var(--cmt)" opacity=".12"/>
+        <rect x="80" y="96" width="70" height="38" fill="none" stroke="var(--cmt)" stroke-width="1.5"/>
         <text x="115" y="113" font-size="11.5" fill="var(--cmt)" text-anchor="middle" font-weight="600" class="ko">트레일러</text>
         <text x="115" y="113" font-size="11.5" fill="var(--cmt)" text-anchor="middle" font-weight="600" class="en">Trailer</text>
         <text x="115" y="127" font-size="11.5" fill="var(--cmt)" text-anchor="middle" font-weight="600" class="ko">+ 7일</text>
@@ -261,352 +266,486 @@
         <text x="115" y="72" font-size="11.5" fill="var(--cmt)" text-anchor="middle" class="ko">본 연구의 입력</text>
         <text x="115" y="72" font-size="11.5" fill="var(--cmt)" text-anchor="middle" class="en">our input</text>
 
-        <!-- 자원 배분 구간 -->
-        <rect x="300" y="30" width="200" height="26" rx="4" fill="var(--meta)" opacity=".18"/>
-        <rect x="300" y="30" width="200" height="26" rx="4" fill="none" stroke="var(--meta)" stroke-width="1.5"/>
-        <text x="400" y="48" font-size="12" fill="var(--meta)" text-anchor="middle" font-weight="600" class="ko">광고·상영관 확정</text>
-        <text x="400" y="48" font-size="12" fill="var(--meta)" text-anchor="middle" font-weight="600" class="en">ads &amp; screens locked</text>
+        <rect x="300" y="30" width="200" height="26" fill="var(--meta)" opacity=".14"/>
+        <rect x="300" y="30" width="200" height="26" fill="none" stroke="var(--meta)" stroke-width="1.5"/>
+        <text x="400" y="48" font-size="12" class="svgmeta ko" text-anchor="middle" font-weight="600">광고·상영관 확정</text>
+        <text x="400" y="48" font-size="12" class="svgmeta en" text-anchor="middle" font-weight="600">ads &amp; screens locked</text>
         <line x1="300" y1="56" x2="300" y2="150" stroke="var(--meta)" stroke-width="1" stroke-dasharray="3 3"/>
         <line x1="500" y1="56" x2="500" y2="150" stroke="var(--meta)" stroke-width="1" stroke-dasharray="3 3"/>
 
-        <!-- 기존 수단 -->
-        <line x1="500" y1="96" x2="815" y2="96" stroke="currentColor" stroke-width="5" opacity=".28" stroke-linecap="round"/>
+        <line x1="500" y1="96" x2="815" y2="96" stroke="currentColor" stroke-width="5" opacity=".28"/>
         <text x="508" y="89" font-size="11.5" fill="currentColor" opacity=".8" class="ko">트래킹 서베이</text>
         <text x="508" y="89" font-size="11.5" fill="currentColor" opacity=".8" class="en">tracking survey</text>
-        <line x1="690" y1="120" x2="815" y2="120" stroke="currentColor" stroke-width="5" opacity=".28" stroke-linecap="round"/>
+        <line x1="690" y1="120" x2="815" y2="120" stroke="currentColor" stroke-width="5" opacity=".28"/>
         <text x="698" y="113" font-size="11.5" fill="currentColor" opacity=".8" class="ko">사전 예매 추정</text>
         <text x="698" y="113" font-size="11.5" fill="currentColor" opacity=".8" class="en">presales estimate</text>
 
-        <!-- 공백 표시 -->
-        <text x="400" y="222" font-size="12" fill="var(--meta)" text-anchor="middle" font-weight="600" class="ko">이 구간에는 담당자의 경험적 판단뿐</text>
-        <text x="400" y="222" font-size="12" fill="var(--meta)" text-anchor="middle" font-weight="600" class="en">only expert judgment exists here</text>
+        <text x="400" y="222" font-size="12" class="svgmeta ko" text-anchor="middle" font-weight="600">이 구간의 판단은 배급사·극장사의 전략적 선택에 맡겨진다</text>
+        <text x="400" y="222" font-size="12" class="svgmeta en" text-anchor="middle" font-weight="600">decisions here rest on distributor and exhibitor judgment</text>
       </svg>
-      <figcaption><b class="ko">그림 1</b><b class="en">Fig 1</b> &nbsp;<span class="ko">자원이 확정되는 구간과 기존 예측 수단이 나오는 구간이 어긋난다. 트레일러 댓글은 그보다 앞서 쌓인다.</span><span class="en">The window where resources are committed does not overlap with the window where forecasts become available. Trailer comments accumulate before both.</span></figcaption>
+      <figcaption><b class="ko">도식 1</b><b class="en">Diagram 1</b><span class="ko">자원이 확정되는 구간과 기존 예측 수단이 나오는 구간이 어긋난다. 트레일러는 통상 개봉 1~3개월 전에 공개되므로, 그 댓글은 두 구간보다 앞서 쌓인다.</span><span class="en">The window where resources are committed does not overlap with the window where forecasts become available. Trailers usually go live one to three months before release, so their comments accumulate ahead of both.</span></figcaption>
     </figure>
 
     <div class="col">
-      <p style="margin-top:22px"><span class="ko">선행 연구가 쓰는 개봉 스크린 수나 광고 노출량은 <strong>배급사가 이미 내린 판단의 결과</strong>다. 이런 변수로 학습한 모델은 흥행 요인을 찾는 대신 배급사의 판단을 되읽는다.</span><span class="en">Screen counts and ad impressions — the strongest predictors in prior work — are <strong>outcomes of decisions the distributor already made</strong>. A model trained on them reads back the distributor's judgment instead of finding what drives revenue.</span></p>
+      <h3><span class="ko">기존 연구가 남긴 세 가지 공백</span><span class="en">Three gaps in prior work</span></h3>
+      <ul class="pts">
+        <li><b><span class="ko">시점</span><span class="en">Timing</span></b><span class="ko">예측력이 높은 개봉 스크린 수, 사전 예매량, 평론가 평점은 개봉 1~2주 전에야 관측된다. 이런 변수에 기대는 모델은 그때가 되어야 작동한다.</span><span class="en">The strongest predictors &mdash; opening screens, presales, critic scores &mdash; only appear one to two weeks before release. Models that rely on them cannot run any earlier.</span></li>
+        <li><b><span class="ko">내생성</span><span class="en">Endogeneity</span></b><span class="ko">스크린 수나 광고 노출량은 <strong>배급사가 이미 내린 판단의 결과</strong>다. 이런 변수로 학습한 모델은 흥행 요인을 찾는 대신 배급사의 판단을 되읽는다.</span><span class="en">Screen counts and ad impressions are <strong>outcomes of decisions the distributor already made</strong>. A model trained on them reads back the distributor&rsquo;s judgment instead of finding what drives revenue.</span></li>
+        <li><b><span class="ko">근거</span><span class="en">Explanation</span></b><span class="ko">대부분의 모델은 숫자 하나만 낸다. 근거 없는 숫자에 예산 배분을 맡기기 어렵고, 예측이 빗나가도 원인을 진단할 수 없다.</span><span class="en">Most models output a single number. It is hard to commit a budget to an unexplained number, and when it misses there is no way to diagnose why.</span></li>
+      </ul>
+      <p style="margin-top:22px"><span class="ko">그래서 이 연구는 세 조건을 함께 지키는 모델을 목표로 한다. 개봉 4~8주 전까지 확보할 수 있는 정보만 쓰고, 그 정보가 배급사의 자원 투입 결정에 오염되지 않았으며, 예측값과 함께 그 근거를 내놓는다.</span><span class="en">This study therefore aims for a model that meets all three conditions at once: it uses only information available four to eight weeks before release, that information is untouched by the distributor&rsquo;s spending decisions, and every prediction comes with its rationale.</span></p>
     </div>
-
 </div></section>
 
+<!-- ───────────────────────── 02 데이터 ───────────────────────── -->
 <section id="data"><div class="wrap">
     <div class="shead"><div class="band"><i></i><i></i><i></i></div><div class="row"><span class="n">02</span><h2><span class="ko">데이터 구축 및 전처리</span><span class="en">Data Construction and Preprocessing</span></h2></div></div>
     <div class="col">
-      <p class="lead"><span class="ko">댓글과 영상, 두 갈래를 묶어 트레일러 정보라 부른다. 둘 다 배급사가 돈을 쓰기 전에 만들어진다.</span><span class="en">Comments and footage — two streams we call trailer information. Both exist before the distributor spends anything.</span></p>
+      <p class="lead"><span class="ko">댓글과 영상, 두 갈래를 묶어 트레일러 정보라 부른다. 둘 다 배급사가 대규모 자원을 투입하기 전에 만들어진다.</span><span class="en">Comments and footage &mdash; together we call them trailer information. Both exist before the distributor commits major resources.</span></p>
+      <p><span class="ko">대상은 2021년 3월부터 2026년 6월까지 북미에서 개봉하고 개봉 첫 주말 실적(OW)이 1,000만 달러를 넘은 217편이다. 음악·콘서트 영화, 발리우드 영화, 재개봉작은 트레일러 반응과 수요의 관계가 일반 상업영화와 달라 제외했고, 애니메이션은 유튜브가 아동용 영상으로 분류해 댓글을 제한하는 경우가 종종 있어 제외했다. 작품 정보와 실적은 Box Office Mojo에서 수집했다.</span><span class="en">The sample is 217 films released in North America between March 2021 and June 2026 with an opening weekend (OW) above $10M. Music and concert films, Bollywood titles and re-releases were excluded because the link between trailer reaction and demand works differently for them; animation was excluded because YouTube sometimes classifies it as children&rsquo;s content and restricts comments. Film metadata and grosses come from Box Office Mojo.</span></p>
     </div>
 
     <figure>
-      <svg viewBox="0 0 900 330" role="img" aria-label="데이터 파이프라인: 댓글은 7일 제한과 2단계 필터를 거쳐 네 개 뷰로, 영상은 프레임 샘플링과 CLIP을 거쳐 한 개 뷰로 이어진다">
+      <svg viewBox="0 0 900 350" role="img" aria-label="데이터 파이프라인: 댓글은 7일 제한과 2단계 필터를 거쳐 세 개 뷰로, 메타데이터는 두 개 뷰로, 영상은 프레임 샘플링과 CLIP을 거쳐 한 개 뷰로 이어져 56차원 입력이 된다">
         <defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 10 5 0 10z" fill="currentColor" opacity=".6"/></marker></defs>
+        <g stroke="currentColor" stroke-width="1.2" opacity=".6" marker-end="url(#a2)">
+          <line x1="170" y1="56" x2="192" y2="56"/><line x1="346" y1="56" x2="368" y2="56"/>
+          <line x1="170" y1="166" x2="192" y2="166"/><line x1="346" y1="166" x2="368" y2="166"/>
+          <line x1="170" y1="276" x2="192" y2="276"/><line x1="346" y1="276" x2="368" y2="276"/>
+        </g>
 
-        <rect x="20" y="130" width="112" height="56" rx="5" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".6"/>
-        <text x="76" y="154" font-size="12" fill="currentColor" text-anchor="middle" class="ko">공식 트레일러</text>
-        <text x="76" y="154" font-size="12" fill="currentColor" text-anchor="middle" class="en">official trailer</text>
-        <text x="76" y="171" font-size="12" fill="currentColor" text-anchor="middle" font-family="monospace" opacity=".75">217</text>
+        <!-- 댓글 -->
+        <g font-size="12" text-anchor="middle">
+          <rect x="20" y="30" width="150" height="52" fill="var(--cmt)" opacity=".08"/><rect x="20" y="30" width="150" height="52" fill="none" stroke="var(--cmt)" stroke-width="1.3"/>
+          <text x="95" y="52" fill="var(--cmt)" font-weight="600" class="ko">댓글 전수 수집</text><text x="95" y="52" fill="var(--cmt)" font-weight="600" class="en">all comments</text>
+          <text x="95" y="70" fill="var(--cmt)" font-family="monospace">3,982,257</text>
+          <rect x="196" y="30" width="150" height="52" fill="var(--cmt)" opacity=".08"/><rect x="196" y="30" width="150" height="52" fill="none" stroke="var(--cmt)" stroke-width="1.3"/>
+          <text x="271" y="52" fill="var(--cmt)" font-weight="600" class="ko">공개 후 7일 이내</text><text x="271" y="52" fill="var(--cmt)" font-weight="600" class="en">first 7 days</text>
+          <text x="271" y="70" fill="var(--cmt)" font-family="monospace">2,999,953</text>
+          <rect x="372" y="30" width="150" height="52" fill="var(--cmt)" opacity=".08"/><rect x="372" y="30" width="150" height="52" fill="none" stroke="var(--cmt)" stroke-width="1.3"/>
+          <text x="447" y="52" fill="var(--cmt)" font-weight="600" class="ko">2단계 필터링</text><text x="447" y="52" fill="var(--cmt)" font-weight="600" class="en">2-stage filter</text>
+          <text x="447" y="70" fill="var(--cmt)" font-family="monospace">2,725,731</text>
+        </g>
+        <g font-size="11" font-family="monospace" fill="var(--cmt)">
+          <text x="540" y="42">→ Cluster Signal · 5</text>
+          <text x="540" y="60">→ Audience Signal · 4</text>
+          <text x="540" y="78">→ Summary Emb. · 16</text>
+        </g>
 
-        <line x1="132" y1="148" x2="176" y2="92" stroke="currentColor" stroke-width="1.2" opacity=".6" marker-end="url(#a2)"/>
-        <line x1="132" y1="168" x2="176" y2="240" stroke="currentColor" stroke-width="1.2" opacity=".6" marker-end="url(#a2)"/>
+        <!-- 메타데이터 -->
+        <g font-size="12" text-anchor="middle">
+          <rect x="20" y="140" width="150" height="52" fill="var(--meta)" opacity=".1"/><rect x="20" y="140" width="150" height="52" fill="none" stroke="var(--meta)" stroke-width="1.3"/>
+          <text x="95" y="162" class="svgmeta" font-weight="600">Box Office Mojo</text>
+          <text x="95" y="180" class="svgmeta ko" font-family="monospace">217편</text><text x="95" y="180" class="svgmeta en" font-family="monospace">217 films</text>
+          <rect x="196" y="140" width="150" height="52" fill="var(--meta)" opacity=".1"/><rect x="196" y="140" width="150" height="52" fill="none" stroke="var(--meta)" stroke-width="1.3"/>
+          <text x="271" y="162" class="svgmeta ko" font-weight="600">장르 멀티핫</text><text x="271" y="162" class="svgmeta en" font-weight="600">multi-hot genres</text>
+          <text x="271" y="180" class="svgmeta ko" font-family="monospace">11종</text><text x="271" y="180" class="svgmeta en" font-family="monospace">11 genres</text>
+          <rect x="372" y="140" width="150" height="52" fill="var(--meta)" opacity=".1"/><rect x="372" y="140" width="150" height="52" fill="none" stroke="var(--meta)" stroke-width="1.3"/>
+          <text x="447" y="162" class="svgmeta ko" font-weight="600">과거 평균 OW</text><text x="447" y="162" class="svgmeta en" font-weight="600">historical mean OW</text>
+          <text x="447" y="180" class="svgmeta ko">학습 데이터로만 계산</text><text x="447" y="180" class="svgmeta en">training data only</text>
+        </g>
+        <g font-size="11" font-family="monospace" class="svgmeta">
+          <text x="540" y="160">→ Genre · 11</text>
+          <text x="540" y="178">→ Hist. Mean OW · 4</text>
+        </g>
 
-        <!-- 댓글 경로 -->
-        <rect x="180" y="58" width="128" height="52" rx="5" fill="var(--cmt)" opacity=".1"/>
-        <rect x="180" y="58" width="128" height="52" rx="5" fill="none" stroke="var(--cmt)" stroke-width="1.4"/>
-        <text x="244" y="80" font-size="12" fill="var(--cmt)" text-anchor="middle" font-weight="600" class="ko">댓글 전수 수집</text>
-        <text x="244" y="80" font-size="12" fill="var(--cmt)" text-anchor="middle" font-weight="600" class="en">all comments</text>
-        <text x="244" y="98" font-size="12" fill="var(--cmt)" text-anchor="middle" font-family="monospace">3,982,257</text>
-        <line x1="308" y1="84" x2="344" y2="84" stroke="currentColor" stroke-width="1.2" opacity=".6" marker-end="url(#a2)"/>
-
-        <rect x="348" y="58" width="128" height="52" rx="5" fill="var(--cmt)" opacity=".1"/>
-        <rect x="348" y="58" width="128" height="52" rx="5" fill="none" stroke="var(--cmt)" stroke-width="1.4"/>
-        <text x="412" y="80" font-size="12" fill="var(--cmt)" text-anchor="middle" font-weight="600" class="ko">7일 이내만</text>
-        <text x="412" y="80" font-size="12" fill="var(--cmt)" text-anchor="middle" font-weight="600" class="en">first 7 days</text>
-        <text x="412" y="98" font-size="12" fill="var(--cmt)" text-anchor="middle" font-family="monospace">2,999,953</text>
-        <line x1="476" y1="84" x2="512" y2="84" stroke="currentColor" stroke-width="1.2" opacity=".6" marker-end="url(#a2)"/>
-
-        <rect x="516" y="58" width="128" height="52" rx="5" fill="var(--cmt)" opacity=".1"/>
-        <rect x="516" y="58" width="128" height="52" rx="5" fill="none" stroke="var(--cmt)" stroke-width="1.4"/>
-        <text x="580" y="80" font-size="12" fill="var(--cmt)" text-anchor="middle" font-weight="600" class="ko">스팸 2단계 필터</text>
-        <text x="580" y="80" font-size="12" fill="var(--cmt)" text-anchor="middle" font-weight="600" class="en">2-stage filter</text>
-        <text x="580" y="98" font-size="12" fill="var(--cmt)" text-anchor="middle" font-family="monospace">2,725,731</text>
-        <line x1="644" y1="84" x2="690" y2="84" stroke="currentColor" stroke-width="1.2" opacity=".6" marker-end="url(#a2)"/>
-
-        <text x="694" y="58" font-size="11.5" fill="currentColor" opacity=".8" class="ko">임베딩 → K=5 군집</text>
-        <text x="694" y="58" font-size="11.5" fill="currentColor" opacity=".8" class="en">embed → K=5 clusters</text>
-        <text x="694" y="76" font-size="11.5" fill="currentColor" opacity=".8" class="ko">감성 3분류 집계</text>
-        <text x="694" y="76" font-size="11.5" fill="currentColor" opacity=".8" class="en">sentiment counts</text>
-        <text x="694" y="94" font-size="11.5" fill="currentColor" opacity=".8" class="ko">LLM 요약 → PCA</text>
-        <text x="694" y="94" font-size="11.5" fill="currentColor" opacity=".8" class="en">LLM summary → PCA</text>
-
-        <!-- 영상 경로 -->
-        <rect x="180" y="214" width="128" height="52" rx="5" fill="var(--vis)" opacity=".1"/>
-        <rect x="180" y="214" width="128" height="52" rx="5" fill="none" stroke="var(--vis)" stroke-width="1.4"/>
-        <text x="244" y="236" font-size="12" fill="var(--vis)" text-anchor="middle" font-weight="600" class="ko">영상 16프레임</text>
-        <text x="244" y="236" font-size="12" fill="var(--vis)" text-anchor="middle" font-weight="600" class="en">16 frames</text>
-        <text x="244" y="254" font-size="12" fill="var(--vis)" text-anchor="middle" font-family="monospace">360p</text>
-        <line x1="308" y1="240" x2="344" y2="240" stroke="currentColor" stroke-width="1.2" opacity=".6" marker-end="url(#a2)"/>
-
-        <rect x="348" y="214" width="128" height="52" rx="5" fill="var(--vis)" opacity=".1"/>
-        <rect x="348" y="214" width="128" height="52" rx="5" fill="none" stroke="var(--vis)" stroke-width="1.4"/>
-        <text x="412" y="236" font-size="12" fill="var(--vis)" text-anchor="middle" font-weight="600">CLIP ViT-B/32</text>
-        <text x="412" y="254" font-size="12" fill="var(--vis)" text-anchor="middle" font-family="monospace">512d</text>
-        <line x1="476" y1="240" x2="512" y2="240" stroke="currentColor" stroke-width="1.2" opacity=".6" marker-end="url(#a2)"/>
-
-        <rect x="516" y="214" width="128" height="52" rx="5" fill="var(--vis)" opacity=".1"/>
-        <rect x="516" y="214" width="128" height="52" rx="5" fill="none" stroke="var(--vis)" stroke-width="1.4"/>
-        <text x="580" y="236" font-size="12" fill="var(--vis)" text-anchor="middle" font-weight="600" class="ko">평균 → PCA</text>
-        <text x="580" y="236" font-size="12" fill="var(--vis)" text-anchor="middle" font-weight="600" class="en">pool → PCA</text>
-        <text x="580" y="254" font-size="12" fill="var(--vis)" text-anchor="middle" font-family="monospace">16d</text>
-        <line x1="644" y1="240" x2="690" y2="240" stroke="currentColor" stroke-width="1.2" opacity=".6" marker-end="url(#a2)"/>
+        <!-- 영상 -->
+        <g font-size="12" text-anchor="middle">
+          <rect x="20" y="250" width="150" height="52" fill="var(--vis)" opacity=".08"/><rect x="20" y="250" width="150" height="52" fill="none" stroke="var(--vis)" stroke-width="1.3"/>
+          <text x="95" y="272" fill="var(--vis)" font-weight="600" class="ko">트레일러 영상</text><text x="95" y="272" fill="var(--vis)" font-weight="600" class="en">trailer video</text>
+          <text x="95" y="290" fill="var(--vis)" font-family="monospace">360p</text>
+          <rect x="196" y="250" width="150" height="52" fill="var(--vis)" opacity=".08"/><rect x="196" y="250" width="150" height="52" fill="none" stroke="var(--vis)" stroke-width="1.3"/>
+          <text x="271" y="272" fill="var(--vis)" font-weight="600" class="ko">16프레임 → CLIP</text><text x="271" y="272" fill="var(--vis)" font-weight="600" class="en">16 frames → CLIP</text>
+          <text x="271" y="290" fill="var(--vis)" font-family="monospace">ViT-B/32 · 512d</text>
+          <rect x="372" y="250" width="150" height="52" fill="var(--vis)" opacity=".08"/><rect x="372" y="250" width="150" height="52" fill="none" stroke="var(--vis)" stroke-width="1.3"/>
+          <text x="447" y="272" fill="var(--vis)" font-weight="600" class="ko">평균 → PCA</text><text x="447" y="272" fill="var(--vis)" font-weight="600" class="en">mean-pool → PCA</text>
+          <text x="447" y="290" fill="var(--vis)" font-family="monospace">16d</text>
+        </g>
+        <text x="540" y="281" font-size="11" font-family="monospace" fill="var(--vis)">→ Trailer Visual · 16</text>
 
         <!-- 합류 -->
-        <rect x="750" y="118" width="130" height="90" rx="5" fill="var(--surface-2)" stroke="currentColor" stroke-width="1.4" opacity=".9"/>
-        <text x="815" y="152" font-size="13" fill="currentColor" text-anchor="middle" font-weight="600" class="ko">6개 뷰</text>
-        <text x="815" y="152" font-size="13" fill="currentColor" text-anchor="middle" font-weight="600" class="en">6 views</text>
-        <text x="815" y="174" font-size="12" fill="currentColor" text-anchor="middle" font-family="monospace" opacity=".75">56 dims</text>
-        <path d="M690 84 Q730 84 730 140 L748 140" fill="none" stroke="var(--cmt)" stroke-width="1.4" opacity=".8"/>
-        <path d="M690 240 Q730 240 730 186 L748 186" fill="none" stroke="var(--vis)" stroke-width="1.4" opacity=".8"/>
+        <path d="M694 60 C722 60 716 138 742 138" fill="none" stroke="var(--cmt)" stroke-width="1.3" opacity=".8"/>
+        <path d="M694 166 L742 166" fill="none" stroke="var(--meta)" stroke-width="1.3" opacity=".8"/>
+        <path d="M694 277 C722 277 716 194 742 194" fill="none" stroke="var(--vis)" stroke-width="1.3" opacity=".8"/>
+        <rect x="744" y="112" width="136" height="108" fill="var(--surface-2)" stroke="currentColor" stroke-width="1.3" opacity=".9"/>
+        <text x="812" y="160" font-size="13" fill="currentColor" text-anchor="middle" font-weight="600" class="ko">6개 뷰</text>
+        <text x="812" y="160" font-size="13" fill="currentColor" text-anchor="middle" font-weight="600" class="en">6 views</text>
+        <text x="812" y="182" font-size="12" fill="currentColor" text-anchor="middle" font-family="monospace" opacity=".75" class="ko">56차원</text>
+        <text x="812" y="182" font-size="12" fill="currentColor" text-anchor="middle" font-family="monospace" opacity=".75" class="en">56 dims</text>
 
-        <text x="450" y="310" font-size="11.5" fill="currentColor" opacity=".65" text-anchor="middle" class="ko">모든 단계는 트레일러 공개 시점의 정보만 사용한다 · 조회수·좋아요는 사후 누수 우려로 제외</text>
-        <text x="450" y="310" font-size="11.5" fill="currentColor" opacity=".65" text-anchor="middle" class="en">every step uses only information available at trailer release · view and like counts excluded as post-hoc leakage</text>
+        <text x="450" y="336" font-size="11.5" fill="currentColor" opacity=".65" text-anchor="middle" class="ko">입력은 예측 시점에 알 수 있던 정보로 한정 · 평균·군집·PCA는 학습 데이터로만 적합 · 조회수·좋아요 제외</text>
+        <text x="450" y="336" font-size="11.5" fill="currentColor" opacity=".65" text-anchor="middle" class="en">only information knowable at prediction time · averages, clusters and PCA fit on training films · views and likes excluded</text>
       </svg>
-      <figcaption><b class="ko">그림 2</b><b class="en">Fig 2</b> &nbsp;<span class="ko">수집부터 뷰 구성까지. 7일로 잘라내도 원본의 75%가 남는다 — 트레일러 댓글 대부분이 공개 직후 일주일에 몰린다.</span><span class="en">From collection to views. Cutting to seven days keeps 75% of the raw comments — most trailer discussion happens in that first week.</span></figcaption>
+      <figcaption><b class="ko">도식 2</b><b class="en">Diagram 2</b><span class="ko">수집부터 뷰 구성까지. 댓글을 공개 후 7일 이내로 한정해도 원본의 75.3%가 남는다. 트레일러 댓글 대부분이 공개 직후 일주일에 몰린다는 뜻이다.</span><span class="en">From collection to views. Keeping only comments from the first seven days still retains 75.3% of the raw total &mdash; most trailer discussion happens in that first week.</span></figcaption>
     </figure>
 
-    <figure>
-      <img src="fig/fig4_5_filtering.png" alt="스팸 필터링 전후 8개 모델의 테스트 MAPE 슬로프 차트">
-      <figcaption><b class="ko">그림 4.5</b><b class="en">Fig 4.5</b> &nbsp;<span class="ko">필터링 전후 테스트 MAPE. 8개 모델 전부 개선됐다. 특정 알고리즘의 약점을 메운 게 아니라 데이터 품질 자체가 올라갔다는 뜻이다.</span><span class="en">Test MAPE before and after filtering. All eight models improve, which points to better input data rather than a fix for one algorithm's weakness.</span></figcaption>
-    </figure>
+    <div class="col">
+      <h3><span class="ko">7일로 자른 이유</span><span class="en">Why seven days</span></h3>
+      <p><span class="ko">시간이 지날수록 홍보성 댓글, 다른 영상에서 넘어온 도배, 이미 관람한 관객의 평가가 섞인다. 기간을 정하지 않으면 오래전에 개봉한 작품일수록 댓글이 더 쌓여 작품 간 비교도 불가능해진다. 모든 작품에 같은 7일을 적용해 예측 시점을 트레일러 공개 시점으로 고정했다. 작성 시각은 YouTube Data API v3로 정확한 일시를 확보했고, 기준점은 업로드 시각이 아닌 최초 댓글 시각이다.</span><span class="en">Over time, promotional posts, spam carried over from other videos and reviews from people who have already seen the film creep in. Without a cutoff, older films would also accumulate more comments, making them incomparable. Applying the same seven days to every film pins the prediction point to the trailer release. Exact timestamps come from the YouTube Data API v3, and the window starts at the first comment rather than the upload time.</span></p>
 
+      <h3><span class="ko">노이즈의 대부분은 광고가 아니라 반복과 빈 텍스트였다</span><span class="en">Most noise was repetition and empty text, not ads</span></h3>
+      <p><span class="ko">규칙 6종으로 알려진 패턴을 먼저 걸러내고, 남은 댓글에 IsolationForest 이상탐지를 적용했다. 7일 이내 댓글의 9.14%인 274,222건이 제거되었다.</span><span class="en">Six rules removed known patterns first, then IsolationForest anomaly detection ran on what remained. In total 274,222 comments (9.14% of the seven-day set) were removed.</span></p>
+      <div class="tw">
+        <table>
+          <thead><tr><th><span class="ko">단계</span><span class="en">Stage</span></th><th><span class="ko">제거 사유</span><span class="en">Reason</span></th><th class="n"><span class="ko">제거 수</span><span class="en">Removed</span></th><th class="n"><span class="ko">제거 중 비중</span><span class="en">Share</span></th></tr></thead>
+          <tbody>
+            <tr><td><span class="ko">규칙 ⑤</span><span class="en">Rule ⑤</span></td><td><span class="ko">동일 영상 내 도배 (3회 이상)</span><span class="en">same comment 3+ times in one video</span></td><td class="n">87,901</td><td class="n">32.1%</td></tr>
+            <tr><td><span class="ko">규칙 ①</span><span class="en">Rule ①</span></td><td><span class="ko">빈 텍스트 (이모지·기호만)</span><span class="en">no letters or digits (emoji/symbols only)</span></td><td class="n">71,577</td><td class="n">26.1%</td></tr>
+            <tr><td><span class="ko">2단계</span><span class="en">Stage 2</span></td><td><span class="ko">IsolationForest 이상탐지</span><span class="en">IsolationForest anomalies</span></td><td class="n">52,207</td><td class="n">19.0%</td></tr>
+            <tr><td><span class="ko">규칙 ④</span><span class="en">Rule ④</span></td><td><span class="ko">과도한 문자·단어 반복</span><span class="en">excessive character/word repetition</span></td><td class="n">30,365</td><td class="n">11.1%</td></tr>
+            <tr><td><span class="ko">규칙 ⑥</span><span class="en">Rule ⑥</span></td><td><span class="ko">교차 영상 봇 중복 (5개 영상 이상)</span><span class="en">same comment across 5+ videos</span></td><td class="n">18,159</td><td class="n">6.6%</td></tr>
+            <tr><td><span class="ko">규칙 ②</span><span class="en">Rule ②</span></td><td><span class="ko">URL·링크 포함</span><span class="en">URLs and links</span></td><td class="n">12,062</td><td class="n">4.4%</td></tr>
+            <tr><td><span class="ko">규칙 ③</span><span class="en">Rule ③</span></td><td><span class="ko">스팸 키워드·이메일·전화번호</span><span class="en">spam keywords, emails, phone numbers</span></td><td class="n">1,951</td><td class="n">0.7%</td></tr>
+            <tr class="sum"><td><span class="ko">합계</span><span class="en">Total</span></td><td><span class="ko">최종 유지 2,725,731건 (90.86%)</span><span class="en">2,725,731 kept (90.86%)</span></td><td class="n">274,222</td><td class="n">100.0%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><span class="ko">도배와 빈 텍스트가 제거분의 58.2%를 차지하고, URL과 스팸 키워드는 합쳐서 5.1%에 그쳤다. 2단계는 contamination 0.02로 제거 비율이 사전에 고정되며, 실제로 걸러낸 것은 광고나 봇이 아니라 「Looks amazing, cant wait」처럼 짧고 대문자가 많은 감탄형 댓글이었다. 이 단계를 유지한 근거는 예측 성능이고(04 실험), 함께 잃는 신호는 한계로 남긴다(06 논의).</span><span class="en">Repetition and empty text account for 58.2% of removals; URLs and spam keywords together only 5.1%. Stage 2 removes a fixed share (contamination 0.02), and what it actually caught were not ads or bots but short, upper-case exclamations like &ldquo;Looks amazing, cant wait&rdquo;. The stage is kept because it improves accuracy (section 04); the signal it also removes is recorded as a limitation (section 06).</span></p>
+
+      <h3><span class="ko">무작위가 아닌 시간 기준 분할</span><span class="en">Split by time, not at random</span></h3>
+      <div class="tw">
+        <table>
+          <thead><tr><th></th><th><span class="ko">개봉 기간</span><span class="en">Release window</span></th><th class="n"><span class="ko">편수</span><span class="en">Films</span></th><th class="n"><span class="ko">OW 평균</span><span class="en">Mean OW</span></th><th class="n"><span class="ko">OW 중앙값</span><span class="en">Median OW</span></th><th class="n"><span class="ko">OW 최대</span><span class="en">Max OW</span></th></tr></thead>
+          <tbody>
+            <tr><td><span class="ko">학습</span><span class="en">Train</span></td><td>2021.3 – 2025.12</td><td class="n">195</td><td class="n">$41.6M</td><td class="n">$25.5M</td><td class="n">$211.4M</td></tr>
+            <tr><td><span class="ko">평가</span><span class="en">Test</span></td><td>2026.1 – 2026.6</td><td class="n">22</td><td class="n">$35.7M</td><td class="n">$24.3M</td><td class="n">$81.7M</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><span class="ko">무작위로 나누면 평가 작품보다 나중에 개봉한 작품의 실적이 과거 평균에 섞이고, 시리즈의 3편으로 2편을 예측하는 일이 생긴다. 시간 기준 분할은 과거로 학습해 미래를 예측하는 실제 운용 조건을 그대로 따른다. 평균이 중앙값의 1.6배에 이르는 heavy-tailed 분포이므로 목표값은 log(1+y)로 변환해 학습하고, 평가 구간에는 학습 구간 수준의 초대형작이 없어 평가 지표는 주로 중간 규모 작품의 예측 품질을 반영한다.</span><span class="en">A random split would let films released after a test title leak into its historical averages, and could have a series&rsquo; third instalment help predict its second. A temporal split reproduces real use: learn from the past, predict the future. Because the distribution is heavy-tailed (the mean is 1.6&times; the median), the target is trained as log(1+y). The test window has no blockbuster on the scale of the training set&rsquo;s largest, so test metrics mainly reflect mid-sized films.</span></p>
+    </div>
 </div></section>
 
+<!-- ───────────────────────── 03 모델 ───────────────────────── -->
 <section id="model" class="alt"><div class="wrap">
     <div class="shead"><div class="band"><i></i><i></i><i></i></div><div class="row"><span class="n">03</span><h2><span class="ko">6-View MvFS 모델 설계</span><span class="en">Six-View MvFS Model Design</span></h2></div></div>
     <div class="col">
-      <p class="lead"><span class="ko">속편은 과거 실적이, 오리지널 신작은 관객 반응이 흥행을 설명한다. 같은 가중치를 모든 작품에 쓸 이유가 없다.</span><span class="en">Sequels are explained by franchise history; original films by audience reaction. There is no reason to weight them the same way.</span></p>
+      <p class="lead"><span class="ko">작품마다 흥행을 설명하는 정보가 다르다. 정보를 여섯 뷰로 나눠 따로 예측하고, 작품마다 다른 비율로 합친다.</span><span class="en">Different films are explained by different information. The model splits its inputs into six views, predicts from each separately, and mixes them in film-specific proportions.</span></p>
+      <p><span class="ko">이질적인 정보를 하나의 긴 배열로 이어 붙이면 차원이 크거나 변동이 큰 정보가 작은 정보를 덮고, 모든 작품에 같은 가중치가 적용된다. 추천 시스템의 MvFS(Lee et al., CIKM 2023)는 여러 하위 네트워크로 특징 중요도를 나눠 학습해 다수 패턴으로 선택이 쏠리는 문제를 줄였다. 박스오피스도 소수 대형작이 분포를 지배하는 같은 구조다. 이 연구는 MvFS의 다중 뷰 중요도 학습에 전문가 혼합(MoE)의 전문가·게이팅 구조를 결합했다.</span><span class="en">Concatenating heterogeneous inputs into one long vector lets high-dimensional or high-variance features drown out small ones, and applies the same weighting to every film. MvFS (Lee et al., CIKM 2023) tackled the recommender-system version of this by learning feature importance through several sub-networks, so selection does not collapse onto majority patterns. Box office has the same shape &mdash; a few blockbusters dominate the distribution. This study combines MvFS-style multi-view importance learning with the expert-and-gating structure of mixture-of-experts.</span></p>
     </div>
 
     <figure>
-      <svg viewBox="0 0 900 300" role="img" aria-label="6-View MvFS 구조: 여섯 뷰가 각자의 Expert MLP에서 예측값을 내고 Global Attention이 작품마다 다른 가중치로 합친다">
-        <defs><marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto"><path d="M0 0 10 5 0 10z" fill="currentColor" opacity=".55"/></marker></defs>
-        <text x="86" y="24" font-size="11" fill="currentColor" opacity=".6" text-anchor="middle" font-family="monospace" class="ko">뷰</text>
-        <text x="86" y="24" font-size="11" fill="currentColor" opacity=".6" text-anchor="middle" font-family="monospace" class="en">VIEW</text>
-        <text x="300" y="24" font-size="11" fill="currentColor" opacity=".6" text-anchor="middle" font-family="monospace">EXPERT MLP</text>
-        <text x="470" y="24" font-size="11" fill="currentColor" opacity=".6" text-anchor="middle" font-family="monospace">ŷₖ</text>
-        <text x="660" y="24" font-size="11" fill="currentColor" opacity=".6" text-anchor="middle" font-family="monospace">wₖ</text>
-
-        <g font-size="11.5" font-family="monospace">
-          <rect x="14" y="40" width="144" height="26" rx="4" fill="var(--cmt)" opacity=".12"/><rect x="14" y="40" width="144" height="26" rx="4" fill="none" stroke="var(--cmt)" stroke-width="1.2"/><text x="24" y="57" fill="var(--cmt)">Cluster Signal · 5</text>
-          <rect x="14" y="74" width="144" height="26" rx="4" fill="var(--meta)" opacity=".12"/><rect x="14" y="74" width="144" height="26" rx="4" fill="none" stroke="var(--meta)" stroke-width="1.2"/><text x="24" y="91" fill="var(--meta)">Genre · 11</text>
-          <rect x="14" y="108" width="144" height="26" rx="4" fill="var(--meta)" opacity=".12"/><rect x="14" y="108" width="144" height="26" rx="4" fill="none" stroke="var(--meta)" stroke-width="1.2"/><text x="24" y="125" fill="var(--meta)">Hist. Mean OW · 4</text>
-          <rect x="14" y="142" width="144" height="26" rx="4" fill="var(--cmt)" opacity=".12"/><rect x="14" y="142" width="144" height="26" rx="4" fill="none" stroke="var(--cmt)" stroke-width="1.2"/><text x="24" y="159" fill="var(--cmt)">Audience Signal · 4</text>
-          <rect x="14" y="176" width="144" height="26" rx="4" fill="var(--cmt)" opacity=".12"/><rect x="14" y="176" width="144" height="26" rx="4" fill="none" stroke="var(--cmt)" stroke-width="1.2"/><text x="24" y="193" fill="var(--cmt)">Summary Emb. · 16</text>
-          <rect x="14" y="210" width="144" height="26" rx="4" fill="var(--vis)" opacity=".12"/><rect x="14" y="210" width="144" height="26" rx="4" fill="none" stroke="var(--vis)" stroke-width="1.2"/><text x="24" y="227" fill="var(--vis)">Trailer Visual · 16</text>
-        </g>
-
-        <g stroke="currentColor" stroke-width="1.1" opacity=".55" marker-end="url(#a3)">
-          <line x1="158" y1="53" x2="236" y2="53"/><line x1="158" y1="87" x2="236" y2="87"/>
-          <line x1="158" y1="121" x2="236" y2="121"/><line x1="158" y1="155" x2="236" y2="155"/>
-          <line x1="158" y1="189" x2="236" y2="189"/><line x1="158" y1="223" x2="236" y2="223"/>
-        </g>
-
-        <g fill="none" stroke="currentColor" stroke-width="1.2" opacity=".55">
-          <rect x="242" y="40" width="116" height="26" rx="4"/><rect x="242" y="74" width="116" height="26" rx="4"/>
-          <rect x="242" y="108" width="116" height="26" rx="4"/><rect x="242" y="142" width="116" height="26" rx="4"/>
-          <rect x="242" y="176" width="116" height="26" rx="4"/><rect x="242" y="210" width="116" height="26" rx="4"/>
-        </g>
-        <g font-size="10.5" fill="currentColor" opacity=".7" text-anchor="middle" font-family="monospace">
-          <text x="300" y="57">d→32→16→1</text><text x="300" y="91">d→32→16→1</text>
-          <text x="300" y="125">d→32→16→1</text><text x="300" y="159">d→32→16→1</text>
-          <text x="300" y="193">d→32→16→1</text><text x="300" y="227">d→32→16→1</text>
-        </g>
-
-        <g stroke="currentColor" stroke-width="1.1" opacity=".55" marker-end="url(#a3)">
-          <line x1="358" y1="53" x2="452" y2="53"/><line x1="358" y1="87" x2="452" y2="87"/>
-          <line x1="358" y1="121" x2="452" y2="121"/><line x1="358" y1="155" x2="452" y2="155"/>
-          <line x1="358" y1="189" x2="452" y2="189"/><line x1="358" y1="223" x2="452" y2="223"/>
-        </g>
-        <g font-size="11" fill="currentColor" opacity=".75" font-family="monospace">
-          <text x="458" y="57">ŷ₁</text><text x="458" y="91">ŷ₂</text><text x="458" y="125">ŷ₃</text>
-          <text x="458" y="159">ŷ₄</text><text x="458" y="193">ŷ₅</text><text x="458" y="227">ŷ₆</text>
-        </g>
-
-        <!-- Global Attention -->
-        <rect x="516" y="40" width="112" height="196" rx="5" fill="var(--meta)" opacity=".1"/>
-        <rect x="516" y="40" width="112" height="196" rx="5" fill="none" stroke="var(--meta)" stroke-width="1.5"/>
-        <text x="572" y="122" font-size="12.5" fill="var(--meta)" text-anchor="middle" font-weight="600">Global</text>
-        <text x="572" y="140" font-size="12.5" fill="var(--meta)" text-anchor="middle" font-weight="600">Attention</text>
-        <text x="572" y="162" font-size="10.5" fill="var(--meta)" text-anchor="middle" font-family="monospace" opacity=".85">56→64→6</text>
-        <path d="M14 252 L502 252 Q516 252 516 238" fill="none" stroke="var(--meta)" stroke-width="1.1" stroke-dasharray="4 3" opacity=".7"/>
-        <text x="258" y="268" font-size="11" fill="var(--meta)" opacity=".85" class="ko">전체 입력 56차원을 조건으로</text>
-        <text x="258" y="268" font-size="11" fill="var(--meta)" opacity=".85" class="en">conditioned on all 56 inputs</text>
-
-        <g stroke="currentColor" stroke-width="1.1" opacity=".55" marker-end="url(#a3)">
-          <line x1="628" y1="138" x2="700" y2="138"/>
-        </g>
-        <text x="662" y="130" font-size="10.5" fill="currentColor" opacity=".7" text-anchor="middle" font-family="monospace">softmax/τ</text>
-
-        <rect x="706" y="112" width="176" height="52" rx="5" fill="var(--surface-2)" stroke="currentColor" stroke-width="1.5"/>
-        <text x="794" y="134" font-size="12.5" fill="currentColor" text-anchor="middle" font-family="monospace" font-weight="600">ŷ = Σ wₖ · ŷₖ</text>
-        <text x="794" y="152" font-size="11" fill="currentColor" text-anchor="middle" opacity=".7" class="ko">개봉 첫 주말 실적</text>
-        <text x="794" y="152" font-size="11" fill="currentColor" text-anchor="middle" opacity=".7" class="en">opening weekend</text>
-
-        <text x="794" y="196" font-size="11.5" fill="var(--meta)" text-anchor="middle" font-weight="600" class="ko">wₖ는 작품마다 달라진다</text>
-        <text x="794" y="196" font-size="11.5" fill="var(--meta)" text-anchor="middle" font-weight="600" class="en">wₖ varies per film</text>
-      </svg>
-      <figcaption><b class="ko">그림 3</b><b class="en">Fig 3</b> &nbsp;<span class="ko">여섯 뷰가 각자 독립적으로 예측값을 내고, Global Attention이 전체 입력을 보고 합치는 비율을 정한다. 이 비율이 곧 예측의 근거가 된다.</span><span class="en">Each view predicts independently; Global Attention sees all inputs and decides how to mix them. Those weights are the explanation.</span></figcaption>
+      <a href="fig/f3-1-architecture.png"><img src="fig/f3-1-architecture.png" width="2000" height="1097" loading="lazy" decoding="async" alt="6-View MvFS 전체 구조: 여섯 입력 뷰가 각자의 Expert MLP를 거쳐 예측값을 내고, Global Attention이 가중치를 산출해 가중합한 뒤 역변환과 재보정을 거친다" data-alt-en="Six-View MvFS architecture: six input views pass through their own Expert MLPs, Global Attention produces weights for a weighted sum, followed by inverse transform and recalibration"></a>
+      <figcaption><b class="ko">그림 3.1</b><b class="en">Fig 3.1</b><span class="ko">6-View MvFS 모델의 전체 구조. 학습 파라미터는 Expert 5,638개와 Attention 4,038개를 합쳐 9,676개다.</span><span class="en">Overall architecture. 9,676 trainable parameters: 5,638 in the experts and 4,038 in the attention network.</span></figcaption>
     </figure>
 
     <div class="col">
+      <ol class="steps">
+        <li><span><b><span class="ko">뷰 분리</span><span class="en">Split into views</span></b> &mdash; <span class="ko">입력 특징 56개를 의미가 가까운 것끼리 여섯 뷰로 묶는다.</span><span class="en">The 56 input features are grouped by meaning into six views.</span></span></li>
+        <li><span><b><span class="ko">뷰별 독립 예측</span><span class="en">Predict per view</span></b> &mdash; <span class="ko">각 뷰는 자기 Expert MLP만 통과해 OW 예측값 ŷₖ 하나를 낸다. 뷰끼리 정보를 주고받지 않는다.</span><span class="en">Each view passes only through its own Expert MLP and yields one OW prediction ŷₖ. Views do not exchange information.</span></span></li>
+        <li><span><b><span class="ko">가중치 산출</span><span class="en">Compute weights</span></b> &mdash; <span class="ko">Global Attention이 56차원 전체 입력을 보고 합이 1인 가중치 wₖ 여섯 개를 작품마다 계산한다.</span><span class="en">Global Attention looks at all 56 inputs and computes six weights wₖ summing to 1, separately for every film.</span></span></li>
+        <li><span><b><span class="ko">가중합</span><span class="en">Weighted sum</span></b> &mdash; <span class="ko">ŷ = Σ wₖ·ŷₖ. 이 가중치가 곧 해석의 근거다. 과거 실적 뷰의 가중치가 0.4라면 그 작품 예측의 40%가 과거 유사작의 실적에서 나왔다는 뜻이다.</span><span class="en">ŷ = Σ wₖ·ŷₖ. The weights are the explanation: a historical-OW weight of 0.4 means 40% of that film&rsquo;s forecast came from comparable past films.</span></span></li>
+      </ol>
+
+      <h3><span class="ko">여섯 개의 뷰</span><span class="en">The six views</span></h3>
+      <p><span class="ko">뷰의 경계는 데이터의 출처가 아니라 정보의 의미를 따른다. 뷰 1·4·5는 모두 댓글에서 나오지만 각각 반응의 유형, 규모와 감성, 내용을 나타낸다.</span><span class="en">Views are drawn by meaning, not by source. Views 1, 4 and 5 all come from comments, but describe the type, the volume and sentiment, and the content of the reaction respectively.</span></p>
+    </div>
+
+    <figure>
+      <a href="fig/f3-2-view-composition.png"><img src="fig/f3-2-view-composition.png" width="2000" height="1008" loading="lazy" decoding="async" alt="데이터 세 갈래가 여섯 뷰로 나뉘어 56차원 입력 벡터를 이루는 과정" data-alt-en="Three data sources split into six views that form the 56-dimensional input vector"></a>
+      <figcaption><b class="ko">그림 3.2</b><b class="en">Fig 3.2</b><span class="ko">데이터에서 여섯 뷰로 이어지는 입력 구성. 차원 수가 곧 영향력이 되지는 않는다. 4차원 뷰도 16차원 뷰와 똑같이 예측값 하나로 환원되고, 둘의 비중은 어텐션이 데이터로부터 학습한다.</span><span class="en">From data to six views. Dimensionality does not translate into influence: a 4-d view and a 16-d view each reduce to a single prediction, and their relative weight is learned by the attention network.</span></figcaption>
+    </figure>
+
     <div class="vcards">
       <article class="vcard" style="--c:var(--cmt)">
-        <div class="vh"><span class="vn">Cluster Signal</span><span class="vd">5d</span>
-          <span class="vs"><span class="ko">댓글</span><span class="en">comments</span></span></div>
+        <div class="vh"><span class="vn">1 · Cluster Signal</span><span class="vd">5d</span>
+          <span class="vs"><span class="ko">트레일러 댓글</span><span class="en">comments</span></span></div>
         <p><span class="ko">관객 반응이 어떤 유형으로 나뉘는지를 비율로 나타낸다.</span><span class="en">The mix of reaction types in a film&rsquo;s comment section.</span></p>
         <dl>
           <dt><span class="ko">만드는 법</span><span class="en">How</span></dt>
-          <dd><span class="ko">댓글을 1,536차원으로 임베딩해 L2 정규화하고, 학습 데이터 댓글만으로 K=5 군집을 학습한다. 각 댓글과 군집 중심의 코사인 유사도에 Softmax를 적용해 소속 확률을 구한 뒤 작품 단위로 평균한다.</span><span class="en">Comments are embedded in 1,536 dimensions, L2-normalised, and clustered into K=5 using training comments only. Cosine similarity to each centroid passes through a softmax, and the probabilities are averaged per film.</span></dd>
+          <dd><span class="ko">댓글을 text-embedding-3-small로 1,536차원 임베딩해 L2 정규화하고, 학습 데이터의 댓글만으로 MiniBatchKMeans K=5 군집을 학습한다. 군집 중심과의 코사인 유사도에 Softmax를 적용한 소속 확률을 작품 단위로 평균한다.</span><span class="en">Comments are embedded in 1,536 dimensions with text-embedding-3-small and L2-normalised; MiniBatchKMeans fits K=5 clusters on training comments only. Softmax over cosine similarity to the centroids gives membership probabilities, averaged per film.</span></dd>
           <dt><span class="ko">설계 근거</span><span class="en">Why</span></dt>
-          <dd><span class="ko">가장 가까운 군집 하나에 배정하면 나머지 성분이 버려진다. 1·2위 군집의 확률 차이는 중앙값 0.011에 불과해, 하드 레이블은 이 미세한 차이를 0과 1로 증폭한다.</span><span class="en">Hard assignment discards everything but the nearest cluster. The median gap between the top two clusters is only 0.011, so a hard label inflates a tiny difference into 0 or 1.</span></dd>
+          <dd><span class="ko">가장 가까운 군집 하나에 배정하면 나머지 성분이 버려진다. 1·2위 군집의 확률 차이는 중앙값 0.011에 불과해, 하드 레이블은 이 미세한 차이를 0과 1로 증폭한다. K=5는 3부터 12까지 일곱 값 중 교차검증 RMSE가 가장 낮았다.</span><span class="en">Hard assignment discards everything but the nearest cluster. The median gap between the top two clusters is only 0.011, so a hard label inflates a tiny difference into 0 or 1. K=5 had the lowest CV RMSE among seven values from 3 to 12.</span></dd>
         </dl>
       </article>
-      <article class="vcard" style="--c:var(--meta)">
-        <div class="vh"><span class="vn">Genre</span><span class="vd">11d</span>
+      <article class="vcard" style="--c:var(--meta);--t:var(--meta-ink)">
+        <div class="vh"><span class="vn">2 · Genre</span><span class="vd">11d</span>
           <span class="vs"><span class="ko">메타데이터</span><span class="en">metadata</span></span></div>
         <p><span class="ko">작품이 어떤 장르 조합에 속하는지를 0/1로 표시한다.</span><span class="en">Which genre combination a film belongs to, as binary flags.</span></p>
         <dl>
           <dt><span class="ko">만드는 법</span><span class="en">How</span></dt>
-          <dd><span class="ko">Box Office Mojo의 장르 표기를 멀티핫으로 인코딩한다. 학습 데이터에서 20회 이상 등장한 11개 장르만 사용한다.</span><span class="en">Genres from Box Office Mojo are multi-hot encoded, restricted to the 11 that appear at least 20 times in training.</span></dd>
+          <dd><span class="ko">Box Office Mojo의 장르 표기를 멀티핫으로 인코딩한다. 학습 데이터에서 20회 이상 등장한 11개 장르만 쓴다. 원본 메타데이터가 그대로 들어가는 유일한 뷰다.</span><span class="en">Box Office Mojo genres, multi-hot encoded and restricted to the 11 that appear at least 20 times in training. The only view that takes raw metadata as-is.</span></dd>
           <dt><span class="ko">설계 근거</span><span class="en">Why</span></dt>
-          <dd><span class="ko">작품당 평균 3.43개 장르가 붙는다. 첫 장르만 취하면 Action·Sci-Fi·Thriller와 Action·Comedy·Romance가 모두 &ldquo;액션물&rdquo;로 뭉뚱그려진다.</span><span class="en">Films carry 3.43 genres on average. Keeping only the first would collapse Action/Sci-Fi/Thriller and Action/Comedy/Romance into one label.</span></dd>
+          <dd><span class="ko">작품당 평균 3.43개 장르가 붙는다(선정된 11종만 세면 3.19개). 첫 장르만 취하면 Action·Sci-Fi·Thriller와 Action·Comedy·Romance가 모두 &ldquo;액션물&rdquo;로 뭉뚱그려진다.</span><span class="en">Films carry 3.43 genres on average (3.19 counting only the selected 11). Keeping only the first would collapse Action/Sci-Fi/Thriller and Action/Comedy/Romance into one label.</span></dd>
         </dl>
       </article>
-      <article class="vcard" style="--c:var(--meta)">
-        <div class="vh"><span class="vn">Historical Mean OW</span><span class="vd">4d</span>
+      <article class="vcard" style="--c:var(--meta);--t:var(--meta-ink)">
+        <div class="vh"><span class="vn">3 · Historical Mean OW</span><span class="vd">4d</span>
           <span class="vs"><span class="ko">메타데이터</span><span class="en">metadata</span></span></div>
-        <p><span class="ko">비슷한 성격의 과거 작품들이 얼마를 벌었는지를 요약한다.</span><span class="en">What comparable films earned in the past.</span></p>
+        <p><span class="ko">성격이 비슷한 과거 작품들이 얼마를 벌었는지를 요약한다.</span><span class="en">What comparable films earned in the past.</span></p>
         <dl>
           <dt><span class="ko">만드는 법</span><span class="en">How</span></dt>
-          <dd><span class="ko">장르별·배급사별·개봉월별 평균 실적과 프랜차이즈 직전작 실적. 평균은 모두 학습 데이터에서만 계산한다.</span><span class="en">Average revenue by genre, distributor and release month, plus the previous film in the franchise. All averages come from training data only.</span></dd>
+          <dd><span class="ko">장르별·배급사별·개봉월별 평균 OW(target encoding)와 프랜차이즈 직전작의 OW. 평균은 모두 학습 데이터로만 계산하고, 직전작은 대상 작품의 개봉일 이전 실적만 쓴다.</span><span class="en">Mean OW by genre, distributor and release month (target encoding), plus the previous franchise entry&rsquo;s OW. All averages use training data only, and only predecessors released before the target film count.</span></dd>
           <dt><span class="ko">설계 근거</span><span class="en">Why</span></dt>
-          <dd><span class="ko">전작이 없는 작품은 학습 데이터의 <em>중앙값</em>으로 대체한다. 평균으로 채우면 소수 대형 흥행작이 끌어올린 값이 들어가 오리지널 신작이 과대평가된다.</span><span class="en">Films without a predecessor get the training <em>median</em>, not the mean — a heavy-tailed average would inflate expectations for original titles.</span></dd>
+          <dd><span class="ko">전작이 없는 작품은 학습 데이터의 <em>중앙값</em>으로 대체한다. 평균으로 채우면 소수 대형 흥행작이 끌어올린 값이 들어가 오리지널 신작이 과대평가된다.</span><span class="en">Films without a predecessor get the training <em>median</em>, not the mean &mdash; a heavy-tailed average would inflate expectations for original titles.</span></dd>
         </dl>
       </article>
       <article class="vcard" style="--c:var(--cmt)">
-        <div class="vh"><span class="vn">Audience Signal</span><span class="vd">4d</span>
-          <span class="vs"><span class="ko">댓글</span><span class="en">comments</span></span></div>
+        <div class="vh"><span class="vn">4 · Audience Signal</span><span class="vd">4d</span>
+          <span class="vs"><span class="ko">트레일러 댓글</span><span class="en">comments</span></span></div>
         <p><span class="ko">반응이 얼마나 많고 어느 쪽으로 기울었는지를 센다.</span><span class="en">How much reaction there was, and which way it leaned.</span></p>
         <dl>
           <dt><span class="ko">만드는 법</span><span class="en">How</span></dt>
-          <dd><span class="ko">전체 댓글 수와 긍정·중립·부정 댓글 수. 감성은 트위터 코퍼스로 사전학습된 RoBERTa 3분류 모델로 산출한다.</span><span class="en">Total comment count plus positive, neutral and negative counts, labelled by a RoBERTa sentiment model pretrained on Twitter text.</span></dd>
+          <dd><span class="ko">전체 댓글 수와 긍정·중립·부정 댓글 수. 감성은 트위터 코퍼스로 사전학습된 RoBERTa 3분류 모델(cardiffnlp/twitter-roberta-base-sentiment)로 산출한다.</span><span class="en">Total comment count plus positive, neutral and negative counts, labelled by a three-class RoBERTa model pretrained on Twitter text (cardiffnlp/twitter-roberta-base-sentiment).</span></dd>
           <dt><span class="ko">설계 근거</span><span class="en">Why</span></dt>
-          <dd><span class="ko">여섯 뷰 중 유일하게 log 변환을 적용한다. 작품 간 댓글 수 격차가 1,500배에 달해, 원 척도로 두면 소수 대형 작품이 학습을 지배한다.</span><span class="en">The only view with a log transform. Comment volume varies 1,500-fold across films, so raw counts would let a few blockbusters dominate training.</span></dd>
+          <dd><span class="ko">여섯 뷰 중 유일하게 log(1+x) 변환을 적용한다. 작품 간 댓글 수 격차가 1,500배에 달해, 원 척도로 두면 소수 대형 작품이 학습을 지배한다.</span><span class="en">The only view with a log(1+x) transform. Comment volume varies about 1,500-fold across films, so raw counts would let a few blockbusters dominate training.</span></dd>
         </dl>
       </article>
       <article class="vcard" style="--c:var(--cmt)">
-        <div class="vh"><span class="vn">Summary Embedding</span><span class="vd">16d</span>
-          <span class="vs"><span class="ko">댓글</span><span class="en">comments</span></span></div>
+        <div class="vh"><span class="vn">5 · Summary Embedding</span><span class="vd">16d</span>
+          <span class="vs"><span class="ko">트레일러 댓글</span><span class="en">comments</span></span></div>
         <p><span class="ko">반응의 <em>내용</em>을 담는다. 군집 신호가 유형 분포라면 이쪽은 무슨 말을 했는지다.</span><span class="en">What the audience actually said, rather than which type their reaction falls into.</span></p>
         <dl>
           <dt><span class="ko">만드는 법</span><span class="en">How</span></dt>
-          <dd><span class="ko">좋아요 상위 80건과 무작위 80건을 뽑아 GPT-4o-mini로 120~180단어 요약을 만들고, 이를 임베딩해 PCA로 16차원으로 줄인다.</span><span class="en">Top-80 liked and 80 random comments are summarised into 120-180 words by GPT-4o-mini, then embedded and reduced to 16 dimensions by PCA.</span></dd>
+          <dd><span class="ko">좋아요 상위 80건과 무작위 80건을 뽑아 GPT-4o-mini로 120~180단어 영문 요약을 만들고(temperature 0.2), 이를 임베딩해 PCA로 16차원으로 줄인다.</span><span class="en">The 80 most-liked and 80 random comments are summarised by GPT-4o-mini into 120&ndash;180 English words (temperature 0.2), then embedded and reduced to 16 dimensions by PCA.</span></dd>
           <dt><span class="ko">설계 근거</span><span class="en">Why</span></dt>
-          <dd><span class="ko">요약은 다섯 관점을 반드시 포함하도록 지시했다. 감성 강도, 관람 의사, 관객 저변, 회의론, 대중적 화제성이다. 특히 <em>관객 저변</em>은 열기가 팬덤에 갇혔는지 일반 관객으로 번졌는지를 가른다.</span><span class="en">The summary must cover five angles: sentiment intensity, viewing intent, audience breadth, scepticism, and mainstream buzz. <em>Breadth</em> is what separates fandom heat from a wide-release audience.</span></dd>
+          <dd><span class="ko">요약은 다섯 관점을 반드시 포함하도록 지시했다. 감성 강도, 관람 의사, 관객 저변, 회의론, 대중적 화제성이다. 특히 <em>관객 저변</em>은 열기가 팬덤에 갇혔는지 일반 관객으로 번졌는지를 가른다.</span><span class="en">The summary must cover five angles: sentiment intensity, viewing intent, audience breadth, scepticism and mainstream buzz. <em>Breadth</em> is what separates fandom heat from a wide-release audience.</span></dd>
         </dl>
       </article>
       <article class="vcard" style="--c:var(--vis)">
-        <div class="vh"><span class="vn">Trailer Visual</span><span class="vd">16d</span>
-          <span class="vs"><span class="ko">영상</span><span class="en">footage</span></span></div>
+        <div class="vh"><span class="vn">6 · Trailer Visual</span><span class="vd">16d</span>
+          <span class="vs"><span class="ko">트레일러 영상</span><span class="en">footage</span></span></div>
         <p><span class="ko">트레일러의 장르적 톤, 제작 규모, 시각적 볼거리를 수치로 옮긴다.</span><span class="en">The trailer&rsquo;s genre tone, production scale and spectacle, as numbers.</span></p>
         <dl>
           <dt><span class="ko">만드는 법</span><span class="en">How</span></dt>
-          <dd><span class="ko">360p로 내려받아 16구간의 <em>중앙</em>에서 프레임을 뽑고, CLIP ViT-B/32로 각 512차원 임베딩 후 L2 정규화해 평균한다. 다시 PCA로 16차원.</span><span class="en">Downloaded at 360p, one frame from the <em>middle</em> of each of 16 segments, embedded with CLIP ViT-B/32, L2-normalised, mean-pooled, then PCA to 16 dimensions.</span></dd>
+          <dd><span class="ko">360p로 내려받아 16구간의 <em>중앙</em>에서 프레임을 뽑고, CLIP ViT-B/32로 각 512차원 임베딩 후 L2 정규화해 평균한다. 다시 PCA로 16차원.</span><span class="en">Downloaded at 360p, one frame from the <em>middle</em> of each of 16 segments, embedded with CLIP ViT-B/32 (512-d), L2-normalised, mean-pooled, then PCA to 16 dimensions.</span></dd>
           <dt><span class="ko">설계 근거</span><span class="en">Why</span></dt>
-          <dd><span class="ko">구간 시작이 아닌 중앙을 쓰는 이유는 배급사 로고나 제목 카드를 피하기 위해서다. 조회수·좋아요는 수집 시점의 누적값이라 개봉 후 유입이 섞여 제외했다.</span><span class="en">Mid-segment sampling avoids distributor logos and title cards. View and like counts were excluded because they accumulate after release.</span></dd>
+          <dd><span class="ko">구간 시작이 아닌 중앙을 쓰는 것은 배급사 로고나 제목 카드를 피하기 위해서다. 조회수·좋아요는 수집 시점의 누적값이라 개봉 후 유입이 섞여 제외했다.</span><span class="en">Mid-segment sampling avoids distributor logos and title cards. View and like counts were excluded because they accumulate after release.</span></dd>
         </dl>
       </article>
     </div>
-      <div class="legend" style="margin-top:20px">
-        <span><i class="chip" style="background:var(--cmt)"></i><span class="ko">댓글 기반</span><span class="en">from comments</span></span>
-        <span><i class="chip" style="background:var(--meta)"></i><span class="ko">메타데이터</span><span class="en">metadata</span></span>
-        <span><i class="chip" style="background:var(--vis)"></i><span class="ko">영상 기반</span><span class="en">from footage</span></span>
-      </div>
-      <h3><span class="ko">댓글 하나는 한 가지 반응만 담지 않는다</span><span class="en">One comment, several reactions</span></h3>
-      <p><span class="ko">「전편이 끝난 방식을 보면 속편이 필요할 것 같지 않았는데, 트레일러가 워낙 잘 만들어져서 이제는 관심이 간다」 — 회의와 관심이 한 문장에 있다. 가장 가까운 군집 하나에 배정하면 나머지는 버려진다. 실제로 1·2위 군집의 확률 차이는 중앙값이 <span class="num">0.011</span>이었다.</span><span class="en">"I did not think this needed a sequel, but the trailer is so well made that I am intrigued now" — doubt and interest in one sentence. Assigning it to a single nearest cluster throws the rest away. In our corpus the gap between the top two clusters had a median of <span class="num">0.011</span>.</span></p>
-      <figure>
-        <img src="fig/fig4_3_ksweep.png" alt="군집 수 K에 따른 교차검증 RMSE 곡선">
-        <figcaption><b class="ko">그림 4.3</b><b class="en">Fig 4.3</b> &nbsp;<span class="ko">K=5에서 RMSE와 MAPE가 함께 최소가 된다.</span><span class="en">RMSE and MAPE both bottom out at K=5.</span></figcaption>
-      </figure>
+    <div class="legend">
+      <span><i class="chip" style="background:var(--cmt)"></i><span class="ko">트레일러 댓글</span><span class="en">trailer comments</span></span>
+      <span><i class="chip" style="background:var(--meta)"></i><span class="ko">메타데이터</span><span class="en">metadata</span></span>
+      <span><i class="chip" style="background:var(--vis)"></i><span class="ko">트레일러 영상</span><span class="en">trailer footage</span></span>
     </div>
 
+    <div class="col">
+      <h3><span class="ko">댓글 하나는 한 가지 반응만 담지 않는다</span><span class="en">One comment, several reactions</span></h3>
+      <p><span class="ko">Black Phone 2 트레일러에 달린 「전편이 끝난 방식을 보면 속편이 필요할 것 같지 않았는데, 트레일러가 워낙 잘 만들어져서 이제는 관심이 간다」에는 회의와 관심이 한 문장에 있다. 소속 확률도 군집 3(0.245)을 정점으로 고르게 퍼진다. 하드 레이블은 이를 군집 3 하나로 만들고 나머지를 버린다. 연속형 확률의 평균은 댓글 몇 건의 배정이 뒤집혀도 작품 단위 신호가 크게 흔들리지 않는다.</span><span class="en">A comment on the Black Phone 2 trailer &mdash; &ldquo;This is a movie I did not think would ever need a sequel based on how the last one ended, but just the fact that this trailer was so well-made, I&rsquo;m now intrigued!&rdquo; &mdash; holds doubt and interest in one sentence. Its membership peaks at cluster 3 (0.245) but stays spread across the others. A hard label turns it into cluster 3 alone. Averaging continuous probabilities also keeps the film-level signal stable when a few borderline comments flip.</span></p>
+    </div>
+    <figure>
+      <a href="fig/f3-3-cluster-signal.png"><img src="fig/f3-3-cluster-signal.png" width="2000" height="1114" loading="lazy" decoding="async" alt="Cluster Signal 생성 절차와 연속형 소속 확률, 하드 레이블 비교" data-alt-en="Cluster Signal pipeline, continuous membership probabilities versus hard labels"></a>
+      <figcaption><b class="ko">그림 3.3</b><b class="en">Fig 3.3</b><span class="ko">(a) 생성 절차. (b) 같은 댓글을 연속형 확률과 하드 레이블로 나타냈을 때. (c) 코퍼스 전체에서 최대 소속 확률의 중앙값은 0.220으로 균등값 0.2에 가깝고, 1·2위 차이의 중앙값은 0.011이다.</span><span class="en">(a) Pipeline. (b) The same comment as continuous probabilities and as a hard label. (c) Across the corpus the median top membership is 0.220, close to the uniform 0.2, and the median gap between the top two is 0.011.</span></figcaption>
+    </figure>
+
+    <div class="col">
+      <h3><span class="ko">메타데이터 뷰의 실제 모습</span><span class="en">What the metadata views look like</span></h3>
+    </div>
+    <figure>
+      <a href="fig/f3-4-genre.png"><img src="fig/f3-4-genre.png" width="2000" height="1012" loading="lazy" decoding="async" alt="The Batman의 장르 멀티핫 인코딩과 장르 11종의 출현 빈도" data-alt-en="Multi-hot genre encoding for The Batman and frequency of the 11 genres"></a>
+      <figcaption><b class="ko">그림 3.4</b><b class="en">Fig 3.4</b><span class="ko">(a) The Batman의 장르 표기 Action·Crime·Drama·Mystery가 11차원 멀티핫 벡터가 된다. (b) 장르 11종의 출현 빈도(전체 217편, 복수 표기). 액션·스릴러·어드벤처 중심의 대형 상업영화 표본이다.</span><span class="en">(a) The Batman&rsquo;s genres (Action, Crime, Drama, Mystery) become an 11-d multi-hot vector. (b) Frequency of the 11 genres across all 217 films. The sample leans toward large action, thriller and adventure releases.</span></figcaption>
+    </figure>
+    <figure>
+      <a href="fig/f3-5-mean-ow.png"><img src="fig/f3-5-mean-ow.png" width="2000" height="849" loading="lazy" decoding="async" alt="장르별, 배급사별, 개봉월별 평균 OW" data-alt-en="Mean OW by genre, distributor and release month"></a>
+      <figcaption><b class="ko">그림 3.5</b><b class="en">Fig 3.5</b><span class="ko">Historical Mean OW를 이루는 세 가지 평균 실적(점선은 학습 데이터 전체 평균 4,160만 달러). 네 번째 성분인 프랜차이즈 전작 OW는 작품마다 달라 그림에 싣지 않았다.</span><span class="en">The three averages behind Historical Mean OW (dashed line: training mean of $41.6M). The fourth component, the previous franchise entry&rsquo;s OW, is film-specific and not shown.</span></figcaption>
+    </figure>
+
+    <div class="col">
+      <h3><span class="ko">Expert MLP: 같은 구조, 다른 입력</span><span class="en">Expert MLPs: one shape, different inputs</span></h3>
+      <p><span class="ko">Linear(dₖ→32) → LayerNorm → ReLU → Dropout(0.3) → Linear(32→16) → ReLU → Linear(16→1). 은닉층 크기 h = max(32, 2dₖ)이므로 여섯 뷰 모두 32가 되어, 차원이 큰 뷰가 더 큰 표현력을 갖는 불균형을 막는다. 배치 크기가 16으로 작아 BatchNorm 대신 LayerNorm을 썼다.</span><span class="en">Linear(dₖ→32) → LayerNorm → ReLU → Dropout(0.3) → Linear(32→16) → ReLU → Linear(16→1). The hidden size h = max(32, 2dₖ) equals 32 for all six views, so larger views do not get more capacity. With a batch size of only 16, LayerNorm is used instead of BatchNorm.</span></p>
+    </div>
+    <figure>
+      <a href="fig/f3-6-expert-mlp.png"><img src="fig/f3-6-expert-mlp.png" width="2000" height="686" loading="lazy" decoding="async" alt="뷰별 Expert MLP의 층 구성" data-alt-en="Layer structure of each view's Expert MLP"></a>
+      <figcaption><b class="ko">그림 3.6</b><b class="en">Fig 3.6</b><span class="ko">뷰별 Expert MLP의 층 구성. 여섯 Expert는 입력 차원 dₖ만 다르다.</span><span class="en">Expert MLP layers. The six experts differ only in input dimension dₖ.</span></figcaption>
+    </figure>
+
+    <div class="col">
+      <h3><span class="ko">Global Attention: 작품마다 다른 뷰를 고른다</span><span class="en">Global Attention: a different mix for every film</span></h3>
+      <p><span class="ko">어텐션 네트워크는 개별 뷰가 아니라 56차원 전체 입력을 조건으로 받는다. Historical Mean OW 값이 높더라도 그것이 믿을 만한 전작 실적인지 장르 평균으로 대체된 값인지는 다른 뷰를 함께 봐야 알 수 있기 때문이다. 평가 작품 Star Wars: The Mandalorian and Grogu에서는 Audience Signal이 0.416으로 가장 크고 Historical Mean OW는 0.037에 그쳤다. 반대로 Primate에서는 Historical Mean OW가 0.363으로 가장 컸다.</span><span class="en">The attention network conditions on all 56 inputs, not on each view alone: a high Historical Mean OW value means something different when it comes from a real predecessor than when it is a genre-average fill-in, and only the other views can tell which. For the test film Star Wars: The Mandalorian and Grogu, Audience Signal gets the largest weight (0.416) and Historical Mean OW only 0.037. For Primate, Historical Mean OW is largest at 0.363.</span></p>
+      <p><span class="ko">temperature τ=0.7은 절충값이다. 너무 낮으면 소수 뷰에만 의존해 다중 뷰의 의미가 사라지고, 너무 높으면 모든 작품의 가중치가 균등해져 해석의 변별력을 잃는다.</span><span class="en">The temperature τ=0.7 is a compromise: too low and the model leans on a couple of views, defeating the multi-view design; too high and every film gets near-uniform weights, which explain nothing.</span></p>
+    </div>
+    <figure>
+      <a href="fig/f3-7-global-attention.png"><img src="fig/f3-7-global-attention.png" width="2000" height="1371" loading="lazy" decoding="async" alt="Global Attention 구성, Star Wars 가중치 계산 과정, temperature에 따른 가중치 분포" data-alt-en="Global Attention structure, weight computation for Star Wars, and weight distributions under different temperatures"></a>
+      <figcaption><b class="ko">그림 3.7</b><b class="en">Fig 3.7</b><span class="ko">(a) 56 → 64 → 6 로짓, τ로 나눈 뒤 Softmax. (b) Star Wars: The Mandalorian and Grogu의 로짓이 가중치로 바뀌는 과정. (c) 같은 로짓에 τ만 0.3·0.7·2.0으로 바꿨을 때.</span><span class="en">(a) 56 → 64 → 6 logits, divided by τ, then softmax. (b) How Star Wars: The Mandalorian and Grogu&rsquo;s logits become weights. (c) The same logits under τ = 0.3, 0.7 and 2.0.</span></figcaption>
+    </figure>
+
+    <div class="col">
+      <h3><span class="ko">학습과 폴드 앙상블</span><span class="en">Training and fold ensemble</span></h3>
+      <p><span class="ko">손실은 로그 변환 후 표준화한 목표값의 MSE다. AdamW(lr 0.001, weight decay 0.01), 배치 16, 드롭아웃 0.3, gradient clipping 1.0, 검증 손실 기준 early stopping 60 epoch. 5겹 교차검증은 OW 5분위로 층화해 초대형작이 한 폴드에 몰리지 않게 했고, 평가 예측은 다섯 모델을 검증 손실의 역수로 가중 평균한다. 교차검증이 early stopping에도 쓰이므로 교차검증 성능은 다소 낙관적일 수 있다. 평가 성능을 따로 보고하는 이유다.</span><span class="en">The loss is MSE on the log-transformed, standardised target. AdamW (lr 0.001, weight decay 0.01), batch 16, dropout 0.3, gradient clipping 1.0, early stopping after 60 epochs without validation improvement. Five-fold CV is stratified by OW quintile so that blockbusters do not pile into one fold, and test predictions average the five models weighted by inverse validation loss. Because CV also decides early stopping, CV scores may be slightly optimistic &mdash; hence the separate test set.</span></p>
+    </div>
+    <figure>
+      <a href="fig/f3-8-training.png"><img src="fig/f3-8-training.png" width="2000" height="886" loading="lazy" decoding="async" alt="층화 5겹 교차검증과 폴드 앙상블, OOF 예측 수집 절차" data-alt-en="Stratified five-fold cross-validation, fold ensemble and out-of-fold prediction collection"></a>
+      <figcaption><b class="ko">그림 3.8</b><b class="en">Fig 3.8</b><span class="ko">층화 교차검증과 폴드 앙상블 절차. 평가 22편은 학습·군집화·PCA·표준화 어디에도 쓰지 않는다.</span><span class="en">Stratified CV and fold ensemble. The 22 test films are never used for training, clustering, PCA or standardisation.</span></figcaption>
+    </figure>
+
+    <div class="col">
+      <h3><span class="ko">예측이 중앙으로 몰리는 현상과 OOF 로그 재보정</span><span class="en">Shrinkage toward the middle, and OOF log recalibration</span></h3>
+      <p><span class="ko">확신이 없을 때 제곱 오차를 줄이는 안전한 선택은 중앙값 근처를 예측하는 것이다. 그 결과 초대형작은 과소, 소규모작은 과대예측된다. 방향이 일정한 편향이므로 log(1+y) = a·log(1+ŷ) + b로 되돌린다. 계수는 학습 데이터 195편의 out-of-fold 예측과 실제값으로만 적합하므로 평가 데이터의 정답은 관여하지 않는다. 적합 결과 a = 0.950, b = 0.859이고, 평가 RMSE는 2,416만 달러에서 2,386만 달러로, MAPE는 39.19%에서 38.75%로 낮아졌다. 다만 재보정 후에도 예측의 표준편차(1,760만 달러)는 실제값(2,520만 달러)에 미치지 못한다.</span><span class="en">When unsure, the safe way to reduce squared error is to predict near the middle, so the largest films get underpredicted and the smallest overpredicted. Because this bias has a consistent direction, it is partly undone with log(1+y) = a·log(1+ŷ) + b. The coefficients are fitted only on out-of-fold predictions and actuals for the 195 training films, so test answers never enter. The fit gives a = 0.950 and b = 0.859; test RMSE falls from $24.16M to $23.86M and MAPE from 39.19% to 38.75%. Even so, the spread of predictions ($17.6M standard deviation) stays below that of actual results ($25.2M).</span></p>
+    </div>
+    <figure>
+      <a href="fig/f3-9-calibration.png"><img src="fig/f3-9-calibration.png" width="2000" height="827" loading="lazy" decoding="async" alt="재보정 전후 예측값과 실제값 산점도, 지표 변화" data-alt-en="Predicted versus actual before and after recalibration, and metric changes"></a>
+      <figcaption><b class="ko">그림 3.9</b><b class="en">Fig 3.9</b><span class="ko">OOF 로그 재보정의 효과. 이 사이트와 논문이 보고하는 성능 수치는 모두 재보정을 적용한 결과다.</span><span class="en">Effect of OOF log recalibration. Every reported metric on this page and in the thesis is post-recalibration.</span></figcaption>
+    </figure>
 </div></section>
 
+<!-- ───────────────────────── 04 실험 ───────────────────────── -->
 <section id="results"><div class="wrap">
     <div class="shead"><div class="band"><i></i><i></i><i></i></div><div class="row"><span class="n">04</span><h2><span class="ko">실험 결과</span><span class="en">Experimental Results</span></h2></div></div>
     <div class="col">
-      <p class="lead"><span class="ko">학습 195편(2021.3~2025.12), 평가 22편(2026 상반기). 무작위가 아닌 시간 기준 분할이라 실제 운용 조건에 가깝다.</span><span class="en">195 films for training (Mar 2021-Dec 2025), 22 for evaluation (H1 2026). A temporal split, not a random one, so the numbers reflect real deployment.</span></p>
-      <div class="tw">
-        <table>
-          <thead><tr><th>Model</th><th>CV RMSE</th><th>CV MAPE</th><th>Test RMSE</th><th>Test MAPE</th></tr></thead>
-          <tbody>
-            <tr class="best"><td>MvFS</td><td class="n">$25.43M</td><td class="n">44.6%</td><td class="n">$23.86M</td><td class="n">38.8%</td></tr>
-            <tr><td>LightGBM</td><td class="n">$27.03M</td><td class="n">45.3%</td><td class="n">$23.30M</td><td class="n">34.3%</td></tr>
-            <tr><td>Lasso</td><td class="n">$27.10M</td><td class="n">49.6%</td><td class="n">$24.99M</td><td class="n">40.9%</td></tr>
-            <tr><td>Ridge</td><td class="n">$27.40M</td><td class="n">50.8%</td><td class="n">$24.42M</td><td class="n">40.9%</td></tr>
-            <tr><td>XGBoost</td><td class="n">$27.75M</td><td class="n">45.2%</td><td class="n">$24.44M</td><td class="n">36.9%</td></tr>
-            <tr><td>Random Forest</td><td class="n">$29.84M</td><td class="n">47.0%</td><td class="n">$25.40M</td><td class="n">42.9%</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="note"><span class="ko">교차검증에서는 제안 모델이 가장 낮다. 평가 데이터에서 LightGBM이 앞서지만 22편 규모에서는 대형 작품 한두 편으로 순위가 뒤집힌다.</span><span class="en">MvFS leads on cross-validation. LightGBM wins on the test set, but with 22 films one or two large titles can flip that ranking.</span></p>
+      <p class="lead"><span class="ko">학습 195편, 평가 22편. 모든 모델에 같은 56개 입력과 같은 전처리, 교차검증, 재보정을 적용했다.</span><span class="en">195 training films, 22 test films. Every model gets the same 56 inputs, preprocessing, cross-validation and recalibration.</span></p>
     </div>
-
+    <div class="tw">
+      <table>
+        <caption><span class="ko">굵은 값은 열별 최솟값. CV는 학습 195편 5겹 교차검증, Test는 2026년 상반기 22편.</span><span class="en">Bold marks the lowest value in each column. CV: five-fold CV on 195 training films. Test: 22 films from H1 2026.</span></caption>
+        <thead><tr><th><span class="ko">모델</span><span class="en">Model</span></th><th class="n">CV RMSE</th><th class="n"><span class="ko">CV RMSE 표준편차</span><span class="en">CV RMSE SD</span></th><th class="n">CV MAPE</th><th class="n">Test RMSE</th><th class="n">Test MAPE</th></tr></thead>
+        <tbody>
+          <tr class="best"><td>MvFS <span class="ko">(제안)</span><span class="en">(ours)</span></td><td class="n lo">$25.43M</td><td class="n">$3.91M</td><td class="n lo">44.6%</td><td class="n">$23.86M</td><td class="n">38.8%</td></tr>
+          <tr><td>LightGBM</td><td class="n">$27.03M</td><td class="n">$4.21M</td><td class="n">45.3%</td><td class="n lo">$23.30M</td><td class="n lo">34.3%</td></tr>
+          <tr><td>Lasso</td><td class="n">$27.10M</td><td class="n">$5.79M</td><td class="n">49.6%</td><td class="n">$24.99M</td><td class="n">40.9%</td></tr>
+          <tr><td>Ridge</td><td class="n">$27.40M</td><td class="n">$5.74M</td><td class="n">50.8%</td><td class="n">$24.42M</td><td class="n">40.9%</td></tr>
+          <tr><td>XGBoost</td><td class="n">$27.75M</td><td class="n">$4.23M</td><td class="n">45.2%</td><td class="n">$24.44M</td><td class="n">36.9%</td></tr>
+          <tr><td>Gradient Boosting</td><td class="n">$27.77M</td><td class="n lo">$3.66M</td><td class="n">45.2%</td><td class="n">$24.82M</td><td class="n">39.0%</td></tr>
+          <tr><td>SVR</td><td class="n">$28.74M</td><td class="n">$4.13M</td><td class="n">50.1%</td><td class="n">$25.28M</td><td class="n">39.5%</td></tr>
+          <tr><td>Random Forest</td><td class="n">$29.84M</td><td class="n">$4.16M</td><td class="n">47.0%</td><td class="n">$25.40M</td><td class="n">42.9%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col">
+      <p><span class="ko">교차검증 RMSE는 제안 모델이 가장 낮다. LightGBM보다 약 160만 달러, Random Forest보다 약 440만 달러 낮고, 폴드 간 표준편차도 Gradient Boosting 다음으로 작다. 평가 데이터에서는 LightGBM이 앞서지만 22편 규모에서는 대형 작품 한두 편으로 순위가 뒤집힐 수 있어, 195편에서 산출한 교차검증 결과가 일반적 성능을 더 잘 반영한다고 본다.</span><span class="en">MvFS has the lowest CV RMSE &mdash; about $1.6M below LightGBM and $4.4M below Random Forest &mdash; and the second-smallest fold-to-fold spread after Gradient Boosting. LightGBM wins on the test set, but with 22 films one or two large titles can flip that ranking, so the CV result over 195 films is taken as the better guide to general performance.</span></p>
+    </div>
     <figure>
-      <img src="fig/fig4_1_model_comparison.png" alt="모델별 교차검증 RMSE와 평가 MAPE 비교">
-      <figcaption><b class="ko">그림 4.1</b><b class="en">Fig 4.1</b> &nbsp;<span class="ko">두 지표가 서로 다른 순위를 가리킨다.</span><span class="en">The two metrics disagree on the ranking.</span></figcaption>
-    </figure>
-    <figure>
-      <img src="fig/fig4_2_ablation.png" alt="설계 요소를 단계적으로 추가했을 때의 성능 변화">
-      <figcaption><b class="ko">그림 4.2</b><b class="en">Fig 4.2</b> &nbsp;<span class="ko">프랜차이즈 전작 실적이 RMSE를 143만 달러 낮춰 가장 컸고, 트레일러 시각 임베딩이 MAPE를 2.0%p 더 개선했다. 마지막 데이터 확장은 점추정치 대신 폴드 간 표준편차를 $5.10M에서 $3.91M로 낮춘다.</span><span class="en">Franchise history gave the largest single gain ($1.43M RMSE); trailer visuals added 2.0pp of MAPE. The final data expansion trades point accuracy for stability, cutting fold variance from $5.10M to $3.91M.</span></figcaption>
+      <a href="fig/f4-1-model-comparison.png"><img src="fig/f4-1-model-comparison.png" width="2000" height="849" loading="lazy" decoding="async" alt="모델별 교차검증 RMSE와 최종 평가 MAPE 비교" data-alt-en="Cross-validation RMSE and test MAPE by model"></a>
+      <figcaption><b class="ko">그림 4.1</b><b class="en">Fig 4.1</b><span class="ko">제안 모델과 베이스라인의 예측 성능 비교. 두 지표가 서로 다른 순위를 가리킨다.</span><span class="en">MvFS against the baselines. The two metrics rank the models differently.</span></figcaption>
     </figure>
 
     <div class="col">
-      <h3><span class="ko">시각 정보는 데이터가 쌓여야 작동한다</span><span class="en">Visual features need scale to work</span></h3>
-      <p><span class="ko">학습 138편에서 Trailer Visual을 더하면 CV RMSE가 <span class="num">$25.84M → $26.40M</span>으로 나빠진다. 195편에서는 <span class="num">$25.77M → $25.43M</span>으로 좋아진다. 512차원을 16차원으로 줄여 쓰는 만큼, 그 관계를 추정할 표본이 필요하다.</span><span class="en">At 138 training films, adding Trailer Visual makes CV RMSE worse (<span class="num">$25.84M → $26.40M</span>). At 195 it helps (<span class="num">$25.77M → $25.43M</span>). Compressing 512 dimensions into 16 only pays off once there are enough films to fit the mapping.</span></p>
-    </div>
-
-</div></section>
-
-<section id="attention" class="alt"><div class="wrap">
-    <div class="shead"><div class="band"><i></i><i></i><i></i></div><div class="row"><span class="n">05</span><h2><span class="ko">어텐션 가중치 분석</span><span class="en">Attention Weight Analysis</span></h2></div></div>
-    <div class="col">
-      <p class="lead"><span class="ko">어텐션 가중치는 사후 분석이 아니라 예측 과정에서 직접 나온다. 작품별로 근거를 분해할 수 있다.</span><span class="en">The attention weights are produced during prediction, not recovered afterwards. Every film's forecast can be broken down.</span></p>
+      <h3><span class="ko">설계 요소를 하나씩 더하면</span><span class="en">Adding one design element at a time</span></h3>
+      <p><span class="ko">초기 4-View 모델에서 출발해 요소를 하나씩 더하며 최종 평가 성능을 측정했다.</span><span class="en">Starting from the early four-view model, each element was added in turn and test performance measured.</span></p>
     </div>
     <figure>
-      <img src="fig/fig4_4_attention.png" alt="여섯 뷰의 평균 어텐션 가중치">
-      <figcaption><b class="ko">그림 4.4</b><b class="en">Fig 4.4</b> &nbsp;<span class="ko">균등값 0.167을 중심으로 0.118~0.226에 분포한다. 정보원별로 묶으면 댓글 0.472, 메타데이터 0.410, 영상 0.118 — 예측의 절반 가까이가 댓글에서 나온다.</span><span class="en">Weights span 0.118-0.226 around the uniform 0.167. Grouped by source: comments 0.472, metadata 0.410, footage 0.118 — nearly half the prediction comes from comments.</span></figcaption>
+      <a href="fig/f4-2-ablation.png"><img src="fig/f4-2-ablation.png" width="2000" height="1312" loading="lazy" decoding="async" alt="설계 요소를 단계적으로 추가했을 때 최종 평가 RMSE와 MAPE 변화" data-alt-en="Test RMSE and MAPE as design elements are added step by step"></a>
+      <figcaption><b class="ko">그림 4.2</b><b class="en">Fig 4.2</b><span class="ko">설계 요소의 단계별 누적 효과(최종 평가, 2026년 22편).</span><span class="en">Cumulative effect of each design element (test set, 22 films from 2026).</span></figcaption>
     </figure>
     <div class="col">
       <ul class="pts">
-        <li class="hi"><b><span class="ko">잘 맞는 경우</span><span class="en">Where it works</span></b><span class="ko">과거 실적과 관객 반응이 같은 방향을 가리키는 중간 규모 속편·장르물. Star Wars: The Mandalorian and Grogu는 오차율 0.9%였다.</span><span class="en">Mid-budget sequels and genre films where history and audience reaction agree. Star Wars: The Mandalorian and Grogu came in at 0.9% error.</span></li>
-        <li><b><span class="ko">과대예측 — 팬덤 집중형</span><span class="en">Overshoot — concentrated fandom</span></b><span class="ko">28 Years Later: The Bone Temple은 댓글 화력이 컸지만 흥행이 따라오지 않아 오차율 82.9%. 팬덤의 열기와 광역 개봉 관객은 다른 크기다.</span><span class="en">28 Years Later: The Bone Temple drew heavy discussion but not the box office, missing by 82.9%. Fandom heat is not the same size as a wide-release audience.</span></li>
-        <li><b><span class="ko">과소예측 — 오리지널 대작</span><span class="en">Undershoot — original blockbusters</span></b><span class="ko">Project Hail Mary는 실제 $80.5M을 $22.2M으로 예측했다. 전작이 없어 과거 실적 뷰가 장르 평균만 제공한다.</span><span class="en">Project Hail Mary earned $80.5M but was predicted at $22.2M. With no prior film, the history view can only offer a genre average.</span></li>
+        <li><b><span class="ko">댓글 요약 (Summary Embedding)</span><span class="en">Comment summary (Summary Embedding)</span></b><span class="ko">RMSE는 거의 그대로, MAPE는 2.7%p 개선. 대형작의 절대 오차보다 중소 규모 작품의 상대 오차를 줄였다.</span><span class="en">RMSE barely moves; MAPE improves 2.7pp. It helps the relative error of small and mid-sized films more than the absolute error of large ones.</span></li>
+        <li class="hi"><b><span class="ko">프랜차이즈 전작 실적</span><span class="en">Previous franchise entry</span></b><span class="ko">RMSE 143만 달러 감소. 단일 요소로는 가장 큰 개선이다.</span><span class="en">RMSE down $1.43M &mdash; the largest single gain.</span></li>
+        <li><b><span class="ko">OOF 로그 재보정</span><span class="en">OOF log recalibration</span></b><span class="ko">RMSE 15만 달러, MAPE 0.2%p 개선. 폭은 작고, 중앙 쏠림을 완전히 해소하지 못한다는 점과 일관된다.</span><span class="en">RMSE down $0.15M, MAPE down 0.2pp. A small gain, consistent with recalibration only partly undoing the shrinkage.</span></li>
+        <li><b><span class="ko">트레일러 CLIP 임베딩</span><span class="en">Trailer CLIP embedding</span></b><span class="ko">RMSE 54만 달러, MAPE 2.0%p 개선. 시각 모달리티에 댓글과 겹치지 않는 정보가 있다.</span><span class="en">RMSE down $0.54M, MAPE down 2.0pp. The visual modality carries information the comments do not.</span></li>
+        <li><b><span class="ko">데이터 확장 (138 → 195편)</span><span class="en">Data expansion (138 → 195 films)</span></b><span class="ko">평가 RMSE는 79만 달러 늘었지만 폴드 간 RMSE 표준편차가 510만 달러에서 391만 달러로 23% 줄었다. 한 번의 점추정보다 학습 데이터가 달라져도 유지되는 안정성을 택했다.</span><span class="en">Test RMSE rises by $0.79M, but the fold-to-fold RMSE spread drops 23%, from $5.10M to $3.91M. Stability across training sets was preferred over a single point estimate.</span></li>
       </ul>
-      <figure>
-        <img src="fig/fig4_6_pred_scatter.png" alt="평가 22편의 예측값 대 실제값 산점도">
-        <figcaption><b class="ko">그림 4.6</b><b class="en">Fig 4.6</b> &nbsp;<span class="ko">22편 중 12편 과소, 10편 과대. 절대백분율오차 중앙값 45.7%.</span><span class="en">12 of 22 under, 10 over. Median absolute percentage error 45.7%.</span></figcaption>
-      </figure>
-    </div>
 
+      <h3><span class="ko">시각 정보는 데이터가 쌓여야 작동한다</span><span class="en">Visual features need scale to work</span></h3>
+      <p><span class="ko">학습 138편에서 Trailer Visual을 더하면 교차검증 RMSE가 <span class="num">2,584만 → 2,640만 달러</span>로 나빠진다. 195편에서는 <span class="num">2,577만 → 2,543만 달러</span>로 좋아진다. 512차원을 16차원으로 줄인 성분이 흥행과 어떤 관계인지는 데이터에서 배워야 하고, 그러려면 표본이 필요하다. 팬데믹 영향이 남은 2021년 개봉작을 빼고 학습하면(167편) 교차검증 RMSE가 2,732만 달러로 오히려 나빠져, 최종 모델은 2021년을 포함한다.</span><span class="en">With 138 training films, adding Trailer Visual makes CV RMSE worse (<span class="num">$25.84M → $26.40M</span>). With 195 it helps (<span class="num">$25.77M → $25.43M</span>). How the 16 compressed CLIP components relate to box office has to be learned from data, and that takes enough films. Dropping the pandemic-affected 2021 releases (167 films) makes CV RMSE worse at $27.32M, so the final model keeps them.</span></p>
+
+      <h3><span class="ko">스팸 필터링: MAPE는 모두 좋아지고 RMSE는 대부분 나빠졌다</span><span class="en">Spam filtering: MAPE improves everywhere, RMSE mostly worsens</span></h3>
+      <p><span class="ko">필터링 전후 데이터로 같은 8개 모델을 학습했다. 이 실험은 최종 모델에 앞선 4-View 구성에서, 2025년 개봉작을 평가 데이터로 둔 초기 분할로 수행했으므로 수치를 위 표와 직접 비교할 수 없고 전후의 상대적 변화로 읽어야 한다.</span><span class="en">The same eight models were trained with and without filtering. This experiment used the earlier four-view setup with 2025 releases as the test set, so its numbers are not comparable to the table above; read them as before-and-after changes.</span></p>
+    </div>
+    <figure class="narrow">
+      <a href="fig/f4-3-filtering.png"><img src="fig/f4-3-filtering.png" width="1906" height="1414" loading="lazy" decoding="async" alt="스팸 필터링 전후 8개 모델의 최종 평가 MAPE" data-alt-en="Test MAPE of eight models before and after spam filtering"></a>
+      <figcaption><b class="ko">그림 4.3</b><b class="en">Fig 4.3</b><span class="ko">스팸 필터링 전후의 테스트 MAPE. 8개 모델 모두 개선되었고(Lasso 1.2%p ~ Gradient Boosting 14.8%p), 제안 모델은 54.4%에서 45.5%로 낮아졌다.</span><span class="en">Test MAPE before and after filtering. All eight models improve (from 1.2pp for Lasso to 14.8pp for Gradient Boosting); MvFS drops from 54.4% to 45.5%.</span></figcaption>
+    </figure>
+    <div class="col">
+      <p><span class="ko">예외 없이 같은 방향이라는 점은 특정 알고리즘의 약점이 아니라 입력 데이터의 품질이 올라갔다는 뜻이다. 그러나 테스트 RMSE는 대부분 악화되어, 제안 모델은 2,997만 달러에서 3,240만 달러가 되었다. 다수 작품의 상대 오차를 고르게 줄이면서 소수 대형작의 오차를 키웠다면 이런 패턴이 나온다. 걸러진 짧은 감탄형 댓글이 대형작의 규모를 가늠하는 데 일부 기여했을 가능성이 있다.</span><span class="en">That every model moves the same way points to better input data rather than a fix for one algorithm. Test RMSE, however, mostly worsened &mdash; for MvFS from $29.97M to $32.40M. That is the pattern you get when relative error shrinks for most films while a few large films get worse. The short exclamations that were filtered out may have helped size the biggest releases.</span></p>
+
+      <h3><span class="ko">군집 수 K</span><span class="en">Number of clusters K</span></h3>
+    </div>
+    <figure class="narrow">
+      <a href="fig/f4-4-k-sweep.png"><img src="fig/f4-4-k-sweep.png" width="1950" height="1144" loading="lazy" decoding="async" alt="군집 수 K에 따른 교차검증 RMSE" data-alt-en="Cross-validation RMSE by number of clusters K"></a>
+      <figcaption><b class="ko">그림 4.4</b><b class="en">Fig 4.4</b><span class="ko">K = 3, 4, 5, 6, 8, 10, 12에 따른 교차검증 RMSE. K=5에서 RMSE(2,492만 달러)와 MAPE(43.2%)가 함께 최소다. 필터링 실험과 같은 4-View·초기 분할 조건이므로 K 사이의 상대적 차이로 읽는다.</span><span class="en">CV RMSE for K = 3, 4, 5, 6, 8, 10, 12. Both RMSE ($24.92M) and MAPE (43.2%) bottom out at K=5. Same four-view, early-split setup as the filtering experiment, so only differences between K values are meaningful.</span></figcaption>
+    </figure>
+
+    <div class="col">
+      <h3><span class="ko">메타데이터 없이 유튜브 신호만으로</span><span class="en">YouTube signals alone, without metadata</span></h3>
+      <p><span class="ko">장르, 배급사, 개봉월, 전작 실적을 모두 빼고 댓글 세 뷰와 Trailer Visual만으로 학습했다(학습 138편 기준).</span><span class="en">Genre, distributor, release month and franchise history were all removed, leaving the three comment views and Trailer Visual (138 training films).</span></p>
+    </div>
+    <div class="tw">
+      <table>
+        <thead><tr><th><span class="ko">피처셋</span><span class="en">Feature set</span></th><th class="n">CV RMSE</th><th class="n">CV MAPE</th><th class="n">Test RMSE</th><th class="n">Test MAPE</th></tr></thead>
+        <tbody>
+          <tr><td><span class="ko">Trailer Visual만</span><span class="en">Trailer Visual only</span></td><td class="n">$37.15M</td><td class="n">71.4%</td><td class="n">$24.83M</td><td class="n">65.7%</td></tr>
+          <tr><td><span class="ko">유튜브 신호 전체 (메타데이터 제외)</span><span class="en">All YouTube signals (no metadata)</span></td><td class="n">$25.73M</td><td class="n">48.6%</td><td class="n">$23.93M</td><td class="n">44.4%</td></tr>
+          <tr><td><span class="ko">메타데이터 포함 (참조)</span><span class="en">With metadata (reference)</span></td><td class="n">$25.84M</td><td class="n">41.9%</td><td class="n">$23.61M</td><td class="n">40.9%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col">
+      <p><span class="ko">유튜브 신호만으로도 교차검증 RMSE가 메타데이터 포함 모델과 사실상 같다. 절대 오차 규모에서는 트레일러 댓글과 영상이 흥행 규모의 상당 부분을 설명한다. 다만 MAPE는 6.7%p 뒤처진다. 메타데이터의 기여는 반응 규모가 크지 않은 작품들 사이의 미세한 차이를 가르는 데 집중되어 있다. 시각 정보는 단독으로는 약하고, 댓글과 결합될 때 보완적으로 작동한다.</span><span class="en">YouTube signals alone match the metadata model on CV RMSE: in absolute terms, trailer comments and footage explain much of a film&rsquo;s scale. MAPE, however, is 6.7pp worse &mdash; metadata mainly helps tell apart films whose online reaction is modest. Visual features are weak on their own and work as a complement to the comments.</span></p>
+    </div>
 </div></section>
 
+<!-- ───────────────────────── 05 분석 ───────────────────────── -->
+<section id="attention" class="alt"><div class="wrap">
+    <div class="shead"><div class="band"><i></i><i></i><i></i></div><div class="row"><span class="n">05</span><h2><span class="ko">어텐션 가중치와 작품별 분석</span><span class="en">Attention Weights and Per-Film Analysis</span></h2></div></div>
+    <div class="col">
+      <p class="lead"><span class="ko">어텐션 가중치는 사후 분석이 아니라 예측 과정에서 직접 나온다. 작품별로 근거를 분해할 수 있다.</span><span class="en">The attention weights are produced during prediction, not recovered afterwards, so every film&rsquo;s forecast can be broken down.</span></p>
+    </div>
+    <figure>
+      <a href="fig/f4-5-attention.png"><img src="fig/f4-5-attention.png" width="2000" height="1009" loading="lazy" decoding="async" alt="여섯 뷰의 평균 어텐션 가중치 (테스트 22편)" data-alt-en="Mean attention weight of the six views (22 test films)"></a>
+      <figcaption><b class="ko">그림 4.5</b><b class="en">Fig 4.5</b><span class="ko">뷰별 평균 어텐션 가중치(테스트 22편). 균등값 0.167을 중심으로 0.118~0.226에 분포해 어느 뷰도 예측을 독점하지 않는다.</span><span class="en">Mean attention weight per view (22 test films). Weights span 0.118&ndash;0.226 around the uniform 0.167; no single view dominates.</span></figcaption>
+    </figure>
+    <div class="col">
+      <p><span class="ko">데이터별로 묶으면 트레일러 댓글 세 뷰의 합이 <span class="num">0.472</span>, 메타데이터 두 뷰가 <span class="num">0.410</span>, 영상이 <span class="num">0.118</span>이다. 예측의 절반 가까이가 댓글에서 나온다. 가장 낮은 Trailer Visual도 균등값의 71% 수준으로 0에 가깝지 않고, 이 뷰를 더했을 때 MAPE가 2.0%p 개선되었다. 보조적이지만 실제로 쓰이는 정보다.</span><span class="en">Grouped by data source: the three comment views sum to <span class="num">0.472</span>, the two metadata views to <span class="num">0.410</span>, footage to <span class="num">0.118</span>. Nearly half of each prediction comes from comments. Even the lowest, Trailer Visual, sits at 71% of the uniform weight rather than near zero, and adding it improved MAPE by 2.0pp &mdash; secondary, but genuinely used.</span></p>
+
+      <h3><span class="ko">평가 22편의 예측</span><span class="en">Predictions for the 22 test films</span></h3>
+    </div>
+    <figure class="narrow">
+      <a href="fig/f4-6-prediction.png"><img src="fig/f4-6-prediction.png" width="1770" height="1607" loading="lazy" decoding="async" alt="평가 22편의 예측값 대 실제값 산점도" data-alt-en="Predicted versus actual opening weekend for the 22 test films"></a>
+      <figcaption><b class="ko">그림 4.6</b><b class="en">Fig 4.6</b><span class="ko">테스트 22편의 예측값과 실제값. 12편 과소, 10편 과대예측이며 절대백분율오차의 중앙값은 45.7%다.</span><span class="en">Predicted versus actual for the 22 test films: 12 under, 10 over, median absolute percentage error 45.7%.</span></figcaption>
+    </figure>
+    <div class="tw">
+      <table>
+        <thead><tr><th></th><th><span class="ko">작품</span><span class="en">Film</span></th><th class="n"><span class="ko">실제 OW</span><span class="en">Actual OW</span></th><th class="n"><span class="ko">예측 OW</span><span class="en">Predicted OW</span></th><th class="n"><span class="ko">오차율</span><span class="en">Error</span></th></tr></thead>
+        <tbody>
+          <tr><td><span class="ko">상위</span><span class="en">Best</span></td><td>Star Wars: The Mandalorian and Grogu</td><td class="n">$81.7M</td><td class="n">$80.9M</td><td class="n">0.9%</td></tr>
+          <tr><td></td><td>Crime 101</td><td class="n">$14.3M</td><td class="n">$14.5M</td><td class="n">1.5%</td></tr>
+          <tr><td></td><td>Obsession</td><td class="n">$17.2M</td><td class="n">$16.2M</td><td class="n">5.9%</td></tr>
+          <tr><td></td><td>Send Help</td><td class="n">$19.1M</td><td class="n">$17.5M</td><td class="n">8.4%</td></tr>
+          <tr class="sum"><td><span class="ko">하위</span><span class="en">Worst</span></td><td>28 Years Later: The Bone Temple</td><td class="n">$12.5M</td><td class="n">$22.9M</td><td class="n">82.9%</td></tr>
+          <tr><td></td><td>Project Hail Mary</td><td class="n">$80.5M</td><td class="n">$22.2M</td><td class="n">72.5%</td></tr>
+          <tr><td></td><td>Scary Movie</td><td class="n">$54.3M</td><td class="n">$15.6M</td><td class="n">71.3%</td></tr>
+          <tr><td></td><td>Mortal Kombat II</td><td class="n">$38.5M</td><td class="n">$63.6M</td><td class="n">65.3%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col">
+      <ul class="pts">
+        <li class="hi"><b><span class="ko">잘 맞은 작품은 규모로 갈리지 않았다</span><span class="en">Accuracy did not split by size</span></b><span class="ko">평가 데이터에서 가장 큰 Star Wars: The Mandalorian and Grogu(오차율 0.9%)와 1,000만 달러대 작품들이 함께 상위에 있다.</span><span class="en">The best predictions include both the largest test film, Star Wars: The Mandalorian and Grogu (0.9% error), and several films in the $10M range.</span></li>
+        <li><b><span class="ko">과대예측 &mdash; 팬덤 집중형 IP</span><span class="en">Overshoot &mdash; fandom-concentrated IP</span></b><span class="ko">28 Years Later: The Bone Temple과 Mortal Kombat II는 댓글의 규모와 열기가 컸지만 흥행이 따라오지 않았다. 요약에 &lsquo;관객 저변&rsquo;과 &lsquo;대중적 화제성&rsquo;을 넣은 것이 바로 이 문제를 겨냥했지만 충분하지 않았다.</span><span class="en">28 Years Later: The Bone Temple and Mortal Kombat II drew large, intense comment sections that the box office did not match. The &lsquo;audience breadth&rsquo; and &lsquo;mainstream buzz&rsquo; angles in the summaries target exactly this, but were not enough.</span></li>
+        <li><b><span class="ko">과소예측 &mdash; 오리지널 IP 대작</span><span class="en">Undershoot &mdash; original-IP blockbusters</span></b><span class="ko">Project Hail Mary는 실제 8,050만 달러를 2,220만 달러로 예측했다. 전작이 없어 Historical Mean OW가 장르 평균 수준만 제공했고, 댓글 규모도 초대형 개봉을 시사할 만큼 크지 않았다. 중앙 쏠림이 가장 뚜렷하게 나타나는 유형이다.</span><span class="en">Project Hail Mary opened at $80.5M against a $22.2M forecast. With no predecessor, Historical Mean OW could only offer a genre-level value, and comment volume did not signal an outsized opening. This is where shrinkage toward the middle shows most clearly.</span></li>
+      </ul>
+      <p style="margin-top:22px"><span class="ko">관객 반응과 과거 실적이 어긋날 때 모델이 어느 쪽을 따를지 결정하기 어려워진다는 것이 이 분석의 핵심이다.</span><span class="en">The central lesson: when audience reaction and historical performance disagree, the model struggles to decide which to follow.</span></p>
+    </div>
+</div></section>
+
+<!-- ───────────────────────── 06 논의 ───────────────────────── -->
 <section id="limits"><div class="wrap">
     <div class="shead"><div class="band"><i></i><i></i><i></i></div><div class="row"><span class="n">06</span><h2><span class="ko">논의 및 한계</span><span class="en">Discussion and Limitations</span></h2></div></div>
     <div class="col">
+      <h3 style="margin-top:0"><span class="ko">선행 연구와의 대비</span><span class="en">Set against prior work</span></h3>
+      <p><span class="ko">RMSE는 시장, 시기, 데이터셋에 따라 크게 달라 연구 간 비교가 어렵고, 대표적인 선행 연구는 흥행을 구간 분류로 풀어 분류 정확도를 보고한다. 아래 표는 우열이 아니라 각 연구가 어떤 신호로 어떤 문제를 풀었는지를 대비한다.</span><span class="en">RMSE depends heavily on market, period and dataset, and the leading prior studies frame box office as classification and report accuracy. The table below contrasts what each study predicted and with which signals; it is not a ranking.</span></p>
+    </div>
+    <div class="tw">
+      <table>
+        <thead><tr><th><span class="ko">연구</span><span class="en">Study</span></th><th><span class="ko">사용 신호</span><span class="en">Signals</span></th><th><span class="ko">예측 대상</span><span class="en">Target</span></th><th><span class="ko">지표</span><span class="en">Metric</span></th><th class="n"><span class="ko">값</span><span class="en">Value</span></th></tr></thead>
+        <tbody>
+          <tr><td>Sharda &amp; Delen (2006)</td><td><span class="ko">메타데이터 7종</span><span class="en">7 metadata variables</span></td><td><span class="ko">9구간 분류</span><span class="en">9-class classification</span></td><td><span class="ko">적중 / 1단계 이내</span><span class="en">exact / within one class</span></td><td class="n">36.9% / 75.2%</td></tr>
+          <tr><td>Madongo &amp; Zhongjun (2023)</td><td><span class="ko">포스터 + 메타데이터</span><span class="en">poster + metadata</span></td><td><span class="ko">개봉 첫 주말 (분류)</span><span class="en">opening weekend (classification)</span></td><td><span class="ko">정확도</span><span class="en">accuracy</span></td><td class="n">59.3%</td></tr>
+          <tr class="best"><td><span class="ko">본 연구</span><span class="en">This study</span></td><td><span class="ko">트레일러 댓글·영상 + 메타데이터</span><span class="en">trailer comments &amp; video + metadata</span></td><td><span class="ko">개봉 첫 주말 (회귀)</span><span class="en">opening weekend (regression)</span></td><td>Test / CV MAPE</td><td class="n">38.8% / 44.6%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col">
+      <p><span class="ko">이 연구는 절대 금액을 맞히는 더 엄격한 회귀 과제를 풀었고, 개봉 직전 변수와 조회수·좋아요를 배제한 채 학습에 쓰지 않은 미래 시점 작품으로 평가했다. 분류 정확도와 회귀 오차는 다른 척도이므로 이 대비가 오차가 더 낮다는 뜻은 아니다. 의의는 더 엄격한 시점 통제 아래에서 실무에 바로 쓸 수 있는 금액 추정치를 제시했다는 데 있다.</span><span class="en">This study tackles the harder task of regressing the dollar amount, without near-release variables or view and like counts, and is evaluated on future films never seen in training. Classification accuracy and regression error are different scales, so the comparison does not mean lower error; its value is a usable dollar estimate under stricter timing control.</span></p>
+
+      <h3><span class="ko">한계</span><span class="en">Limitations</span></h3>
       <ul class="pts">
-        <li><b><span class="ko">평가 표본 22편</span><span class="en">22 evaluation films</span></b><span class="ko">작품 한두 편으로 모델 순위가 뒤집힌다. 교차검증과 평가 성능을 함께 보고한 이유다.</span><span class="en">One or two titles can reorder the models, which is why both cross-validation and test results are reported.</span></li>
-        <li><b><span class="ko">필터링의 상충</span><span class="en">Filtering cuts both ways</span></b><span class="ko">MAPE는 8개 모델 전부 개선됐지만 RMSE는 대부분 악화됐다. 제거된 댓글 상당수가 「Looks amazing, cant wait」 같은 짧은 감탄이었다.</span><span class="en">MAPE improved for all eight models while RMSE mostly worsened. Many removed comments were short bursts like "Looks amazing, cant wait".</span></li>
-        <li><b><span class="ko">규모 신호의 부재</span><span class="en">No budget signal</span></b><span class="ko">제작비와 마케팅 예산을 확보하지 못했다. 오리지널 대작 과소예측의 직접적 원인이다.</span><span class="en">Production and marketing budgets were unavailable — the direct cause of the blockbuster undershoot.</span></li>
-        <li><b><span class="ko">조회수를 쓰지 못함</span><span class="en">View counts unused</span></b><span class="ko">수집 시점의 누적값이라 개봉 후 유입이 섞인다. 공개 직후부터 시계열로 모으면 누수 없이 쓸 수 있다.</span><span class="en">They are cumulative at collection time and mix in post-release traffic. Sampling them as a time series from launch would make them usable.</span></li>
+        <li><b><span class="ko">평가 표본 22편</span><span class="en">Only 22 test films</span></b><span class="ko">작품 한두 편의 오차로 모델 순위가 뒤바뀔 수 있다. 실제로 교차검증과 평가가 다른 순위를 가리켰고, 그래서 두 성능을 함께 보고했다.</span><span class="en">One or two titles can reorder the models; cross-validation and test did rank them differently, which is why both are reported.</span></li>
+        <li><b><span class="ko">필터링의 상충</span><span class="en">Filtering cuts both ways</span></b><span class="ko">필터링은 다수 작품의 상대 오차를 줄이는 대신 대형작의 절대 오차를 키웠을 수 있다. 짧은 감탄형 댓글을 지우기보다 별도 신호로 분리해 쓰는 방안을 검토할 여지가 있다.</span><span class="en">Filtering may have traded the absolute error of large films for the relative error of most films. Keeping short exclamations as a separate signal, rather than deleting them, is worth exploring.</span></li>
+        <li><b><span class="ko">오리지널 IP 대작의 과소예측</span><span class="en">Original-IP blockbusters are underpredicted</span></b><span class="ko">전작이 없고 트레일러 반응만으로 초대형 개봉을 시사하지 못하면 크게 빗나간다. 수집했으나 최종 모델에서 뺀 감독·주연 배우의 과거 실적, 확보하지 못한 제작비와 마케팅 예산 같은 규모 신호를 통합하면 완화할 수 있을 것이다.</span><span class="en">Without a predecessor, and when trailer reaction does not signal an outsized opening, forecasts miss badly. Scale signals &mdash; director and lead-actor track records (collected but left out of the final model), and production and marketing budgets (not available) &mdash; could ease this.</span></li>
+        <li><b><span class="ko">조회수와 참여율을 쓰지 못함</span><span class="en">View counts and engagement unused</span></b><span class="ko">수집 시점의 누적값이라 사후 누수 위험이 있다. 영상 통계를 포함한 참조 모델은 교차검증 RMSE 2,423만 달러로 최종 모델보다 좋았지만 예측 시점에 재현할 수 없어 채택하지 않았다. 트레일러 공개 직후부터 조회수를 시계열로 모으면 누수 없이 쓸 수 있다.</span><span class="en">They are cumulative at collection time and risk post-release leakage. A reference model with video statistics reached a CV RMSE of $24.23M, better than the final model, but could not be reproduced at prediction time and was not adopted. Sampling views as a time series from the moment a trailer launches would make them usable without leakage.</span></li>
+      </ul>
+
+      <blockquote>
+        <p><span class="ko">관객이 아직 영화를 보지 않은 시점에, 그들이 남긴 말로부터 얼마나 많은 것을 알 수 있는가. 217편이라는 제한된 표본에서 얻은 답은, 상당히 많은 것을 알 수 있으나 전부는 아니라는 것이다. 트레일러에 대한 반응은 관객이 무엇에 기대하고 무엇을 의심하는지를 담고 있지만, 그 열기가 실제 극장 관람으로 얼마나 전환될지는 반응의 크기만으로 결정되지 않는다.</span><span class="en">How much can we learn from what audiences say before they have seen the film? The answer from a limited sample of 217 films: a great deal, but not everything. Trailer reactions show what audiences hope for and what they doubt, but how much of that enthusiasm turns into ticket sales is not set by the size of the reaction alone.</span></p>
+        <footer><span class="ko">논문 5.3절에서</span><span class="en">From section 5.3 of the thesis</span></footer>
+      </blockquote>
+
+      <ul class="refs">
+        <li>R. Sharda and D. Delen, &ldquo;Predicting box-office success of motion pictures with neural networks,&rdquo; <i>Expert Systems with Applications</i>, 30(2), 243&ndash;254, 2006.</li>
+        <li>C. T. Madongo and T. Zhongjun, &ldquo;A movie box office revenue prediction model based on deep multimodal features,&rdquo; <i>Multimedia Tools and Applications</i>, 82(21), 31981&ndash;32009, 2023.</li>
+        <li>Y. Lee, Y. Jeong, K. Park, and S. Kang, &ldquo;MvFS: Multi-view feature selection for recommender system,&rdquo; <i>Proc. CIKM</i>, 4048&ndash;4052, 2023.</li>
       </ul>
     </div>
 </div></section>
@@ -615,17 +754,20 @@
   <footer>
     <div class="band" style="margin-bottom:20px"><i></i><i></i><i></i></div>
     <p class="note" style="margin:0">서정범 · 고려대학교 SW·AI 융합대학원 빅데이터융합학과 · 지도교수 강성구<br>
-    <span class="ko">모든 수치와 그림은 본 연구에서 직접 산출한 것이다.</span><span class="en">All figures and numbers were produced in this study.</span></p>
+    <span class="ko">선행 연구의 보고 수치를 제외한 모든 수치와 그림은 본 연구에서 산출한 것이다.</span><span class="en">Apart from the figures reported by prior studies, all numbers and charts were produced in this study.</span></p>
   </footer>
 </div>
 
 <script>
 (function(){
   var root=document.documentElement,
-      btns=document.querySelectorAll('[data-lang-set]');
+      btns=document.querySelectorAll('[data-lang-set]'),
+      imgs=[].slice.call(document.querySelectorAll('img[data-alt-en]'));
+  imgs.forEach(function(im){im.dataset.altKo=im.alt;});
   function apply(v){
     if(v==='en'){root.setAttribute('data-lang','en');root.lang='en';}else{root.removeAttribute('data-lang');root.lang='ko';}
     btns.forEach(function(b){b.setAttribute('aria-pressed', String(b.dataset.langSet===v));});
+    imgs.forEach(function(im){im.alt=(v==='en')?im.dataset.altEn:im.dataset.altKo;});
   }
   var saved='ko';
   try{ if(localStorage.getItem('tw-lang')==='en') saved='en'; }catch(e){}
