@@ -13,6 +13,8 @@
 <meta property="og:image" content="https://jbseooo.github.io/trailer-ow-prediction/fig/kcc-f1-architecture.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='2' fill='%232a5179'/%3E%3Crect x='3' y='4' width='10' height='2' fill='white'/%3E%3Crect x='3' y='7.5' width='7' height='2' fill='white' opacity='.75'/%3E%3Crect x='3' y='11' width='4' height='2' fill='white' opacity='.5'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="site.css">
 <style>
@@ -23,14 +25,14 @@
   .film .hd b{color:var(--ink);font-weight:500}
   .film .hd span{font-size:12px;color:var(--muted)}
   .wrow{display:grid;grid-template-columns:minmax(0,1fr) 176px;align-items:center;gap:12px}
-  .wbar{position:relative;height:16px;background:var(--surface-2)}
+  .wbar{position:relative;height:14px;border-bottom:1px solid var(--line)}
   .wbar i{position:absolute;inset:0 auto 0 0;background:var(--c)}
   .wbar u{position:absolute;top:-3px;bottom:-3px;left:25%;border-left:1px dashed var(--ink-2);text-decoration:none}
   .wrow em{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink);white-space:nowrap}
-  section.alt .wbar{background:var(--ground)}
 </style>
 </head>
 <body>
+<a class="skip" href="#main"><span class="ko">본문 바로가기</span><span class="en">Skip to content</span></a>
 
 <div class="tabbar"><div class="wrap">
   <nav aria-label="논문 버전">
@@ -41,13 +43,13 @@
 
 <div class="wrap">
   <header class="hero">
-    <p class="eyebrow"><span class="ko"><b>KCC 2026 제출 논문</b> · 한국컴퓨터종합학술대회</span><span class="en"><b>Paper submitted to KCC 2026</b> · Korea Computer Congress</span></p>
     <h1><span class="ko">유튜브 트레일러 댓글 임베딩과 <br><span style="white-space:nowrap">Multi-View</span> Feature Selection을 활용한 <br>북미 개봉 첫 주말 박스오피스 예측</span><span class="en">Predicting North American Opening Weekend Box Office <br>Using <span style="white-space:nowrap">Multi-View</span> Feature Selection with YouTube Trailer</span></h1>
     <p class="sub"><span class="ko">개봉 전에 공개되는 유튜브 트레일러 댓글을 임베딩과 클러스터링으로 잠재 관객의 반응 분포로 정량화하고, 영화 메타데이터와 함께 4개의 독립 뷰로 구성해 북미 개봉 첫 주말 박스오피스를 예측한다.</span><span class="en">YouTube trailer comments, posted before release, are turned into a distribution of potential-audience reactions through embedding and clustering, then combined with film metadata in four independent views to predict North American opening weekend box office.</span></p>
     <div class="band"><i></i><i></i><i></i></div>
     <div class="byline">
       <span><b>서정범 &middot; Jeongbeom Seo</b></span>
       <span class="ko">고려대학교 SW·AI 융합대학원</span><span class="en">Graduate School of SW·AI Convergence, Korea University</span>
+      <span class="ko">KCC 2026(한국컴퓨터종합학술대회) 제출 논문</span><span class="en">Submitted to KCC 2026 (Korea Computer Congress)</span>
     </div>
     <div class="btns">
       <a class="btn" href="paper/kcc2026-trailer-mvfs.pdf" target="_blank" rel="noopener" type="application/pdf">
@@ -58,22 +60,23 @@
   </header>
 </div>
 
-<nav class="toc">
+<nav class="toc" aria-label="섹션 목차">
   <div class="navin">
     <ul>
-      <li><a href="#intro"><span class="i">01</span><span class="ko">배경</span><span class="en">Background</span></a></li>
-      <li><a href="#method"><span class="i">02</span><span class="ko">방법</span><span class="en">Method</span></a></li>
-      <li><a href="#dataset"><span class="i">03</span><span class="ko">데이터</span><span class="en">Data</span></a></li>
-      <li><a href="#result"><span class="i">04</span><span class="ko">결과</span><span class="en">Results</span></a></li>
-      <li><a href="#conclusion"><span class="i">05</span><span class="ko">결론</span><span class="en">Conclusion</span></a></li>
+      <li><a href="#intro"><span class="ko">배경</span><span class="en">Background</span></a></li>
+      <li><a href="#method"><span class="ko">방법</span><span class="en">Method</span></a></li>
+      <li><a href="#dataset"><span class="ko">데이터</span><span class="en">Data</span></a></li>
+      <li><a href="#result"><span class="ko">결과</span><span class="en">Results</span></a></li>
+      <li><a href="#conclusion"><span class="ko">결론</span><span class="en">Conclusion</span></a></li>
     </ul>
-    <div class="langsw">
+    <div class="langsw" role="group" aria-label="언어 Language">
       <button type="button" data-lang-set="ko" aria-pressed="true">KO</button>
       <button type="button" data-lang-set="en" aria-pressed="false">EN</button>
     </div>
   </div>
 </nav>
 
+<main id="main">
 <div class="wrap">
   <div class="stats">
     <div class="stat"><span class="k">135</span><span class="l"><span class="ko">분석 대상 영화</span><span class="en">films analyzed</span></span></div>
@@ -84,7 +87,7 @@
 
 <!-- ───────────────────────── 01 배경 ───────────────────────── -->
 <section id="intro" class="alt"><div class="wrap">
-    <div class="shead"><div class="band"><i></i><i></i><i></i></div><div class="row"><span class="n">01</span><h2><span class="ko">서론 및 관련 연구</span><span class="en">Introduction and Related Work</span></h2></div></div>
+    <div class="shead"><h2><span class="ko">서론 및 관련 연구</span><span class="en">Introduction and Related Work</span></h2></div>
     <div class="col">
       <p class="lead"><span class="ko">기존 예측은 전문가의 주관적 판단이나 개봉 임박 시점의 예매 데이터에 기대고 있어, 선제적 의사결정에 쓰기 어렵다.</span><span class="en">Existing forecasts rely on expert judgment or on presales data that arrive just before release, which makes them hard to use for decisions made ahead of time.</span></p>
       <p><span class="ko">북미 개봉 첫 주말 실적(OW)은 글로벌 흥행 가능성을 가늠하는 선행 지표로, 업계는 여기에 장르별·시장별 흥행 배수를 적용해 글로벌 누적 수익을 추산한다. 그러나 전문가 판단은 예측자에 따라 편차가 크고 재현성이 낮으며, 사전 예매 기반 추정은 개봉 임박 시점에서야 의미 있는 신호를 얻어 편성 조정이나 마케팅 전략 재수립 같은 선제적 대응이 어렵다. 반면 유튜브 공식 트레일러는 통상 개봉 1~3개월 전에 공개되고, 그 댓글은 사전 예매 개시와 평론가 시사 이전에 확보할 수 있는 잠재 관객의 자발적 선행 신호다.</span><span class="en">North American opening weekend (OW) is a leading indicator of a film&rsquo;s global potential; the industry applies genre- and market-specific multipliers to it to estimate worldwide totals. Expert judgment, however, varies widely between forecasters and is hard to reproduce, and presales-based estimates only produce a meaningful signal close to release, leaving little room to adjust scheduling or marketing. Official YouTube trailers, by contrast, typically go live one to three months before release, and their comments are a voluntary leading signal from potential audiences, available before presales open and before critics&rsquo; screenings.</span></p>
@@ -93,14 +96,14 @@
       <ul class="pts">
         <li><b>Madongo &amp; Zhongjun</b><span class="ko">포스터의 시각 피처와 메타데이터를 결합한 DMFCNN으로, 멀티모달 결합이 단일 모달리티보다 예측 정확도를 유의미하게 높인다는 것을 보였다.</span><span class="en">DMFCNN combines poster visual features with metadata, showing that multimodal fusion clearly beats a single modality.</span></li>
         <li><b>Leukel et al.</b><span class="ko">최근 흥행작과 유사한 영화(copycat)는 흥행에 긍정적으로 작용하지만, 유사작이 많거나 유사도가 지나치게 높으면 그 효과가 줄어든다는 것을 밝혔다.</span><span class="en">Films resembling recent hits (copycats) do better at the box office, but the effect fades when there are many such films or the resemblance is too close.</span></li>
-        <li class="hi"><b>Lee et al. &mdash; MvFS</b><span class="ko">추천 시스템에서 인스턴스별로 유의미한 피처를 고르는 프레임워크. 서로 다른 피처 패턴을 맡는 서브네트워크들이 각자 피처 중요도를 독립적으로 학습해 주도적 패턴으로의 편향을 억제하고, 피처 간 의존성 없이 각 필드에 중요도를 부여한다.</span><span class="en">A recommender-system framework for selecting useful features per instance. Sub-networks, each covering a different feature pattern, learn feature importance independently, which curbs bias toward dominant patterns and scores each field without inter-feature dependence.</span></li>
+        <li><b>Lee et al. (MvFS)</b><span class="ko">추천 시스템에서 인스턴스별로 유의미한 피처를 고르는 프레임워크. 서로 다른 피처 패턴을 맡는 서브네트워크들이 각자 피처 중요도를 독립적으로 학습해 주도적 패턴으로의 편향을 억제하고, 피처 간 의존성 없이 각 필드에 중요도를 부여한다.</span><span class="en">A recommender-system framework for selecting useful features per instance. Sub-networks, each covering a different feature pattern, learn feature importance independently, which curbs bias toward dominant patterns and scores each field without inter-feature dependence.</span></li>
       </ul>
     </div>
 </div></section>
 
 <!-- ───────────────────────── 02 방법 ───────────────────────── -->
 <section id="method"><div class="wrap">
-    <div class="shead"><div class="band"><i></i><i></i><i></i></div><div class="row"><span class="n">02</span><h2><span class="ko">연구 방법</span><span class="en">Method</span></h2></div></div>
+    <div class="shead"><h2><span class="ko">연구 방법</span><span class="en">Method</span></h2></div>
     <div class="col">
       <p class="lead"><span class="ko">트레일러 댓글 임베딩과 영화 메타데이터를 4개의 독립 뷰로 나누고, 뷰별 Expert MLP의 예측값을 어텐션 기반 동적 가중치로 합친다.</span><span class="en">Trailer-comment embeddings and film metadata are split into four independent views; the predictions of per-view Expert MLPs are combined with attention-based dynamic weights.</span></p>
       <p><span class="ko">뷰마다 정보 원천과 피처의 의미가 다르므로 각자 독립적인 학습 경로로 처리하고, 어텐션이 영화 특성에 따라 각 뷰의 기여도를 조정한다.</span><span class="en">Because the views differ in source and meaning, each follows its own learning path, and attention adjusts each view&rsquo;s contribution to the film at hand.</span></p>
@@ -134,10 +137,10 @@
       </div>
       <p><span class="ko">하드 군집 레이블 대신 각 클러스터에 대한 연속형 소속 확률을 피처로 써서, 잠재 관객의 반응 유형 분포를 정보 손실 없이 정량화한다.</span><span class="en">Using continuous memberships instead of hard cluster labels quantifies the mix of potential-audience reaction types without discarding information.</span></p>
 
-      <h3>View 2 &ndash; 4</h3>
+      <h3>View 2-4</h3>
       <ul class="pts">
         <li><b>View 2 &middot; Audience Signal</b><span class="ko">트레일러 댓글의 반응 규모와 감성을 나타내는 4차원 벡터. log1p 변환으로 분포를 정규화한다.</span><span class="en">A 4-d vector for the volume and sentiment of trailer comments, normalised with a log1p transform.</span></li>
-        <li><b>View 3 &middot; Historical Mean OW</b><span class="ko">장르별·배급사별·개봉월별 과거 평균 OW로 만든 3차원 벡터. 유사 조건 영화들의 과거 흥행 기댓값을 선행 신호로 쓴다.</span><span class="en">A 3-d vector of historical mean OW by genre, distributor and release month &mdash; the past expectation for films in similar conditions, used as a leading signal.</span></li>
+        <li><b>View 3 &middot; Historical Mean OW</b><span class="ko">장르별·배급사별·개봉월별 과거 평균 OW로 만든 3차원 벡터. 유사 조건 영화들의 과거 흥행 기댓값을 선행 신호로 쓴다.</span><span class="en">A 3-d vector of historical mean OW by genre, distributor and release month: the past expectation for films in similar conditions, used as a leading signal.</span></li>
         <li><b>View 4 &middot; Genre</b><span class="ko">장르 카테고리를 원-핫 인코딩한 8차원 벡터. 장르별 흥행 패턴의 차이를 독립적으로 학습하도록 별도 뷰로 분리했다.</span><span class="en">An 8-d one-hot genre vector, kept as its own view so that genre-specific patterns are learned independently.</span></li>
       </ul>
 
@@ -152,12 +155,12 @@
 
 <!-- ───────────────────────── 03 데이터 ───────────────────────── -->
 <section id="dataset" class="alt"><div class="wrap">
-    <div class="shead"><div class="band"><i></i><i></i><i></i></div><div class="row"><span class="n">03</span><h2><span class="ko">데이터셋</span><span class="en">Dataset</span></h2></div></div>
+    <div class="shead"><h2><span class="ko">데이터셋</span><span class="en">Dataset</span></h2></div>
     <div class="col">
-      <p class="lead"><span class="ko">2022~2025년 북미 개봉작 중 트레일러 기반 사전 관심도 분석이 가능한 135편.</span><span class="en">135 North American releases from 2022&ndash;2025 for which trailer-based pre-release interest can be analysed.</span></p>
+      <p class="lead"><span class="ko">2022~2025년 북미 개봉작 중 트레일러 기반 사전 관심도 분석이 가능한 135편.</span><span class="en">135 North American releases from 2022-2025 for which trailer-based pre-release interest can be analysed.</span></p>
       <ul class="pts">
-        <li><b><span class="ko">조건 1</span><span class="en">Condition 1</span></b><span class="ko">유튜브 공식 트레일러와 댓글 데이터가 존재할 것.</span><span class="en">An official YouTube trailer with comment data exists.</span></li>
-        <li><b><span class="ko">조건 2</span><span class="en">Condition 2</span></b><span class="ko">북미 개봉 첫 주말(OW) 수익이 1,000만 달러 이상일 것. 그보다 작은 개봉작은 공식 트레일러가 없거나 댓글이 적어, 군집 신호를 통계적으로 의미 있게 추출하기 어려운 경우가 많다.</span><span class="en">North American OW of at least $10M. Smaller releases often lack an official trailer or have too few comments to extract a statistically meaningful cluster signal.</span></li>
+        <li><b><span class="ko">공식 트레일러와 댓글</span><span class="en">Official trailer with comments</span></b><span class="ko">유튜브 공식 트레일러와 댓글 데이터가 존재할 것.</span><span class="en">An official YouTube trailer with comment data exists.</span></li>
+        <li><b><span class="ko">OW 1,000만 달러 이상</span><span class="en">OW of $10M or more</span></b><span class="ko">북미 개봉 첫 주말(OW) 수익이 1,000만 달러 이상일 것. 그보다 작은 개봉작은 공식 트레일러가 없거나 댓글이 적어, 군집 신호를 통계적으로 의미 있게 추출하기 어려운 경우가 많다.</span><span class="en">North American OW of at least $10M. Smaller releases often lack an official trailer or have too few comments to extract a statistically meaningful cluster signal.</span></li>
       </ul>
     </div>
     <div class="col">
@@ -178,7 +181,7 @@
 
 <!-- ───────────────────────── 04 결과 ───────────────────────── -->
 <section id="result"><div class="wrap">
-    <div class="shead"><div class="band"><i></i><i></i><i></i></div><div class="row"><span class="n">04</span><h2><span class="ko">연구 결과</span><span class="en">Results</span></h2></div></div>
+    <div class="shead"><h2><span class="ko">연구 결과</span><span class="en">Results</span></h2></div>
     <div class="col">
       <p class="lead"><span class="ko">같은 피처셋과 학습 조건에서 Stratified 5-Fold 교차검증으로 평가했다. 제안 모델의 MAPE가 가장 낮았다.</span><span class="en">All models were evaluated with stratified five-fold cross-validation on the same features and training setup. The proposed model had the lowest MAPE of all.</span></p>
       <div class="tw">
@@ -193,7 +196,7 @@
           </tbody>
         </table>
       </div>
-      <p><span class="ko">단일 MLP보다 MAPE가 4.3%p 낮다. 피처 집합 간 이질성을 뷰로 분리하고 어텐션으로 동적으로 합치는 구조가 유효하다는 뜻이다.</span><span class="en">Against a single MLP, MAPE is 4.3pp lower &mdash; evidence that separating heterogeneous feature sets into views and fusing them dynamically with attention pays off.</span></p>
+      <p><span class="ko">단일 MLP보다 MAPE가 4.3%p 낮다. 피처 집합 간 이질성을 뷰로 분리하고 어텐션으로 동적으로 합치는 구조가 유효하다는 뜻이다.</span><span class="en">Against a single MLP, MAPE is 4.3pp lower, evidence that separating heterogeneous feature sets into views and fusing them dynamically with attention pays off.</span></p>
 
       <h3><span class="ko">뷰별 Attention 가중치</span><span class="en">Attention weight by view</span></h3>
     </div>
@@ -211,7 +214,7 @@
           <div class="wrow"><div class="wbar" role="img" aria-label="Cluster Signal 0.56"><i style="width:56%"></i><u></u></div><em>Cluster Signal 0.56</em></div>
         </div>
         <div class="film" style="--c:var(--cmt)">
-          <div class="hd"><b>Mission: Impossible &ndash; The Final Reckoning</b><span class="ko">팬덤 기반 반응 규모가 예측을 주도</span><span class="en">fandom-driven reaction volume leads</span></div>
+          <div class="hd"><b>Mission: Impossible - The Final Reckoning</b><span class="ko">팬덤 기반 반응 규모가 예측을 주도</span><span class="en">fandom-driven reaction volume leads</span></div>
           <div class="wrow"><div class="wbar" role="img" aria-label="Audience Signal 0.60"><i style="width:60%"></i><u></u></div><em>Audience Signal 0.60</em></div>
         </div>
         <div class="film" style="--c:var(--meta)">
@@ -226,7 +229,7 @@
 
 <!-- ───────────────────────── 05 결론 ───────────────────────── -->
 <section id="conclusion" class="alt"><div class="wrap">
-    <div class="shead"><div class="band"><i></i><i></i><i></i></div><div class="row"><span class="n">05</span><h2><span class="ko">결론</span><span class="en">Conclusion</span></h2></div></div>
+    <div class="shead"><h2><span class="ko">결론</span><span class="en">Conclusion</span></h2></div>
     <div class="col">
       <p class="lead"><span class="ko">제안 모델은 MAPE 40.9%로 모든 비교 모델보다 우수했다.</span><span class="en">The proposed model reached a MAPE of 40.9%, ahead of every baseline.</span></p>
       <ul class="pts">
@@ -236,22 +239,20 @@
       </ul>
       <p style="margin-top:22px"><span class="ko">향후 연구로는 트레일러 영상의 시각적 피처를 독립 뷰로 추가하는 멀티모달 확장을 제안했다.</span><span class="en">As future work, the paper proposed a multimodal extension that adds trailer visual features as an independent view.</span></p>
 
-      <div class="callout">
-        <p style="margin:0 0 10px;color:var(--ink)"><b><span class="ko">이후 석사 학위논문으로 확장</span><span class="en">Extended in the master&rsquo;s thesis</span></b></p>
-        <div class="tw" style="margin:0 0 10px">
+      <h3><span class="ko">이후 석사 학위논문으로 확장</span><span class="en">Extended in the master&rsquo;s thesis</span></h3>
+      <div class="tw">
           <table>
             <thead><tr><th></th><th>KCC 2026</th><th><span class="ko">석사 학위논문</span><span class="en">Master&rsquo;s thesis</span></th></tr></thead>
             <tbody>
-              <tr><td><span class="ko">대상 작품</span><span class="en">Films</span></td><td><span class="ko">135편 (2022~2025)</span><span class="en">135 (2022&ndash;2025)</span></td><td><span class="ko">217편 (2021.3~2026.6)</span><span class="en">217 (Mar 2021&ndash;Jun 2026)</span></td></tr>
+              <tr><td><span class="ko">대상 작품</span><span class="en">Films</span></td><td><span class="ko">135편 (2022~2025)</span><span class="en">135 (2022-2025)</span></td><td><span class="ko">217편 (2021.3~2026.6)</span><span class="en">217 (Mar 2021 to Jun 2026)</span></td></tr>
               <tr><td><span class="ko">뷰 구성</span><span class="en">Views</span></td><td>4-View</td><td><span class="ko">6-View (+ Summary Embedding, Trailer Visual)</span><span class="en">6-View (+ Summary Embedding, Trailer Visual)</span></td></tr>
               <tr><td>Historical Mean OW</td><td><span class="ko">3차원</span><span class="en">3-d</span></td><td><span class="ko">4차원 (+ 프랜차이즈 전작 OW)</span><span class="en">4-d (+ previous franchise OW)</span></td></tr>
               <tr><td>Genre</td><td><span class="ko">원-핫 8차원</span><span class="en">one-hot, 8-d</span></td><td><span class="ko">멀티핫 11차원</span><span class="en">multi-hot, 11-d</span></td></tr>
               <tr><td><span class="ko">평가</span><span class="en">Evaluation</span></td><td>Stratified 5-Fold CV</td><td><span class="ko">시간 기준 분할 (학습 195 · 평가 22) + 5-Fold CV</span><span class="en">temporal split (195 train · 22 test) + 5-fold CV</span></td></tr>
             </tbody>
           </table>
-        </div>
-        <p style="margin:0"><span class="ko">KCC 논문이 향후 연구로 제안한 트레일러 시각 피처는 학위논문에서 Trailer Visual 뷰로 추가되었다. 표본과 평가 방식이 달라 두 논문의 수치는 직접 비교할 수 없다. <a href="./">석사 학위논문 보기 →</a></span><span class="en">The trailer visual features proposed here as future work became the Trailer Visual view in the thesis. Samples and evaluation differ, so the two papers&rsquo; numbers are not directly comparable. <a href="./">See the master&rsquo;s thesis →</a></span></p>
       </div>
+      <p><span class="ko">KCC 논문이 향후 연구로 제안한 트레일러 시각 피처는 학위논문에서 Trailer Visual 뷰로 추가되었다. 표본과 평가 방식이 달라 두 논문의 수치는 직접 비교할 수 없다. 자세한 내용은 <a href="./">석사 학위논문 페이지</a>에 있다.</span><span class="en">The trailer visual features proposed here as future work became the Trailer Visual view in the thesis. Samples and evaluation differ, so the two papers&rsquo; numbers are not directly comparable. Details are on the <a href="./">master&rsquo;s thesis page</a>.</span></p>
 
       <ul class="refs">
         <li>[1] Gower Street Analytics, &ldquo;Global Box Office Forecast 2025,&rdquo; Industry Report, 2024.</li>
@@ -261,6 +262,8 @@
       </ul>
     </div>
 </div></section>
+
+</main>
 
 <div class="wrap">
   <footer>

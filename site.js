@@ -1,4 +1,4 @@
-// 언어 전환(KO/EN)과 현재 섹션 표시 — index.html, kcc.html 공용
+// 언어 전환(KO/EN)과 현재 섹션 표시: index.html, kcc.html 공용
 (function(){
   var root=document.documentElement,
       btns=document.querySelectorAll('[data-lang-set]'),
@@ -20,25 +20,21 @@
     });
   });
 
-  // 현재 읽고 있는 섹션을 내비에 표시
-  var links=[].slice.call(document.querySelectorAll('nav.toc a[href^="#"]')),
-      secs=links.map(function(a){return document.getElementById(a.getAttribute('href').slice(1));});
-  function mark(i){
+  // 현재 읽고 있는 섹션을 내비에 표시: 화면 위쪽 32% 지점을 지나는 섹션
+  var links=[].slice.call(document.querySelectorAll('nav.toc a[href^="#"]'));
+  var secs=links.map(function(a){return document.getElementById(a.getAttribute('href').slice(1));});
+  if(!('IntersectionObserver' in window)) return;
+  var visible=new Set();
+  function mark(){
+    var best=-1;
+    secs.forEach(function(el,k){ if(visible.has(el)) best=k; });
     links.forEach(function(a,k){
-      if(k===i){a.setAttribute('aria-current','true');}else{a.removeAttribute('aria-current');}
+      if(k===best){a.setAttribute('aria-current','true');}else{a.removeAttribute('aria-current');}
     });
   }
-  function current(){
-    var line=window.innerHeight*0.32, best=-1;
-    secs.forEach(function(el,k){
-      if(el && el.getBoundingClientRect().top<=line) best=k;
-    });
-    mark(best);
-  }
-  var tick=false;
-  window.addEventListener('scroll',function(){
-    if(tick) return; tick=true;
-    requestAnimationFrame(function(){current();tick=false;});
-  },{passive:true});
-  current();
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){ if(en.isIntersecting) visible.add(en.target); else visible.delete(en.target); });
+    mark();
+  },{rootMargin:'-32% 0px -67% 0px'});
+  secs.forEach(function(el){ if(el) io.observe(el); });
 })();
